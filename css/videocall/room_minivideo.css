@@ -1,0 +1,66 @@
+/* --- Mini Video Container --- */
+#mini-video-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 240px; /* ขยายขนาดเล็กน้อย */
+    height: 135px; /* อัตราส่วน 16:9 */
+    z-index: 10001; /* อยู่เหนือทุกอย่างในโหมดเต็มจอ */
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    cursor: grab;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#mini-video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* กลับด้านวิดีโอตัวเองให้เหมือนกระจก */
+}
+
+/* --- Overlay บน Mini Video --- */
+.mini-video-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+    color: #fff;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* --- ปุ่มสำหรับแสดง Mini Video ที่ซ่อนอยู่ --- */
+#show-mini-video-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10002;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(30, 30, 30, 0.8);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 20px;
+    cursor: pointer;
+    display: none; /* ซ่อนเป็นค่าเริ่มต้น */
+    transition: transform 0.2s ease;
+}
+
+#show-mini-video-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ซ่อน UI หลักเมื่ออยู่ในโหมดเต็มจอ */
+:fullscreen #controls-bar,
+:fullscreen #stats-hud,
+:fullscreen #toast-container {
+    display: none !important;
+}

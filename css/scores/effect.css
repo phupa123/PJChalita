@@ -1,0 +1,370 @@
+/* Background Effect */
+body {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    min-height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Floating Cards Effect */
+.score-card, .history-card {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+.score-card {
+    animation-delay: 0s;
+}
+
+.history-card {
+    animation-delay: 0.5s;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* Score Value Glow Effect */
+.score-value {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+    to {
+        text-shadow: 0 0 20px #fff,
+                     0 0 30px #4CAF50,
+                     0 0 40px #4CAF50;
+    }
+}
+
+/* Level Badge Effects */
+.level-badge {
+    position: relative;
+    overflow: hidden;
+    animation: badge-shine 2s linear infinite;
+}
+
+@keyframes badge-shine {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+.level-wow {
+    background: linear-gradient(270deg, #ff6b6b, #ffd93d, #ff6b6b);
+    background-size: 200% auto;
+}
+
+/* History Item Hover Effect */
+.history-item {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.history-item:hover {
+    transform: scale(1.02) translateX(10px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+}
+
+/* Score Change Number Effect */
+.score-change {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.positive .score-change::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: pulse 2s infinite;
+}
+
+.negative .score-change::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(244, 67, 54, 0.2);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+}
+
+/* Back Button Effect */
+.btn-back {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    z-index: 1;
+}
+
+.btn-back:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-back::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: 0.5s;
+    z-index: -1;
+}
+
+.btn-back:hover::before {
+    left: 100%;
+}
+
+/* Container Entrance Animation */
+.container {
+    animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Cursor Effect */
+/* Hide native cursor only when JS enables the custom cursor (body.custom-cursor) */
+body.custom-cursor * {
+    cursor: none !important;
+}
+
+.cursor {
+    pointer-events: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+}
+
+/* Main cursor dot */
+.cursor-dot {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle at 35% 35%, #ffffff, #dcdcdc 60%);
+    border-radius: 50%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    transition: width 160ms ease, height 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25), 0 0 8px rgba(255,255,255,0.6);
+}
+
+/* Outer ring */
+.cursor-ring {
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    transition: width 180ms ease, height 180ms ease, border-color 180ms ease, background 180ms ease, opacity 180ms ease;
+    opacity: 0.95;
+}
+
+/* Hover animation (applied by adding class on container) */
+.cursor.cursor--hover .cursor-dot,
+.cursor--hover .cursor-dot {
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle at 35% 35%, #eaffea, #4CAF50 70%);
+    box-shadow: 0 8px 30px rgba(76, 175, 80, 0.35);
+}
+
+.cursor.cursor--hover .cursor-ring,
+.cursor--hover .cursor-ring {
+    width: 48px;
+    height: 48px;
+    border-color: rgba(76, 175, 80, 0.6);
+    background: rgba(76, 175, 80, 0.06);
+}
+
+/* Click animation (uses classes so JS doesn't directly set transforms) */
+.cursor.cursor--click .cursor-dot,
+.cursor--click .cursor-dot {
+    animation: cursorClickDot 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    background: radial-gradient(circle at 35% 35%, #bbdefb, #2196F3 70%);
+    box-shadow: 0 10px 30px rgba(33,150,243,0.35);
+}
+
+.cursor.cursor--click .cursor-ring,
+.cursor--click .cursor-ring {
+    animation: cursorClickRing 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    border-color: rgba(33, 150, 243, 0.6);
+    background: rgba(33, 150, 243, 0.06);
+}
+
+/* Cursor Animations */
+@keyframes cursorClickDot {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(0.7); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes cursorClickRing {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.6); opacity: 0.45; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Sparkles Effect */
+.score-card::before,
+.score-card::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: white;
+    opacity: 0;
+    animation: sparkle 3s infinite;
+}
+
+.score-card::before {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.score-card::after {
+    top: 80%;
+    left: 80%;
+    animation-delay: 1.5s;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* --- Touch-specific effects (mobile) --- */
+.touch-ripple {
+    position: fixed;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: touchRippleAnim 600ms cubic-bezier(.2,.8,.2,1);
+    background: rgba(255,255,255,0.18);
+    pointer-events: none;
+    will-change: transform, opacity;
+    z-index: 99998;
+}
+
+@keyframes touchRippleAnim {
+    0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.2);
+    }
+    60% {
+        opacity: 0.45;
+        transform: translate(-50%, -50%) scale(1.6);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.6);
+    }
+}
+
+.touch-trail {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: none;
+    animation: touchTrailFade 420ms linear forwards;
+    will-change: transform, opacity;
+    z-index: 99998;
+}
+
+@keyframes touchTrailFade {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+}
+
+/* Reduce heavy shadows on mobile for performance */
+@media (max-width: 768px) {
+    .cursor-dot, .cursor-ring {
+        box-shadow: none;
+        transition: width 120ms ease, height 120ms ease;
+    }
+}
