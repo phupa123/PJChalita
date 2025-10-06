@@ -104,6 +104,9 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                                         <label class="form-label">ระดับเสียง: <span id="join-leave-volume-value">50</span>%</label>
                                         <input type="range" class="form-range" id="join-leave-volume" min="0" max="100" value="50">
                                     </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testJoinLeaveSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงเข้าห้อง
+                                    </button>
                                 </div>
                             </div>
                         </div>

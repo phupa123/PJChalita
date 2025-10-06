@@ -128,6 +128,22 @@
         }
     }
 
+    // Test join/leave sound with current volume setting
+    function testJoinLeaveSound() {
+        try {
+            const joinLeaveVolume = parseInt(localStorage.getItem(SETTINGS_KEYS.joinLeaveVolume)) || DEFAULTS.joinLeaveVolume;
+            const audio = new Audio('sound/videocall/join_room.mp3');
+            audio.volume = joinLeaveVolume / 100;
+            audio.play().catch(error => {
+                console.warn('Failed to play test sound:', error);
+                showToast('ไม่สามารถเล่นเสียงได้', 'warning');
+            });
+        } catch (error) {
+            console.error('Error testing join/leave sound:', error);
+            showToast('เกิดข้อผิดพลาดในการทดสอบเสียง', 'error');
+        }
+    }
+
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         loadSettings();
@@ -151,6 +167,7 @@
         window.showSection = showSection;
         window.goBack = goBack;
         window.testButtonSound = testButtonSound;
+        window.testJoinLeaveSound = testJoinLeaveSound;
     });
 
 })();
