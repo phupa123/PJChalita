@@ -90,16 +90,16 @@
             section.style.display = 'none';
         });
 
-        // Remove active class from all nav links
-        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
-
         // Show selected section
-        document.getElementById(sectionId + '-section').style.display = 'block';
+        const sectionEl = document.getElementById(sectionId + '-section');
+        if (sectionEl) sectionEl.style.display = 'block';
 
-        // Add active class to clicked link
-        event.target.classList.add('active');
+        // Update active state on sidebar links without relying on global event
+        const targetSelector = `.sidebar .nav-link[href="#${sectionId}"]`;
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            if (link.matches(targetSelector)) link.classList.add('active');
+            else link.classList.remove('active');
+        });
     }
 
     // Go back to previous page

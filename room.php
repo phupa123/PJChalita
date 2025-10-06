@@ -51,14 +51,21 @@ $trust_link_url = 'https://' . $remote_peer_host . '/peerjs';
     <link rel="stylesheet" href="css/videocall/room_revamped.css">
     <link rel="stylesheet" href="css/videocall/room_fullscreen.css">
     <link rel="stylesheet" href="css/videocall/room_minivideo.css">
+    <link rel="stylesheet" href="css/videocall/room_youtube.css">
 
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script>
+    <script src="js/volume.js"></script>
+<script>
         window.appConfig = {
             ROOM_ID: "<?php echo htmlspecialchars($room_id); ?>",
             MY_USER_INFO: <?php echo json_encode($current_user_info); ?>,
             LOCAL_PEER_SERVER_IP: '192.168.1.4',
-            REMOTE_PEER_SERVER_HOST: '<?php echo $remote_peer_host; ?>'
+            REMOTE_PEER_SERVER_HOST: '<?php echo $remote_peer_host; ?>',
+            // Add settings from localStorage for camera and mic auto settings
+            CAMERA_AUTO_SETTING: localStorage.getItem('pjchalita-camera-auto') || 'auto',
+            MIC_AUTO_SETTING: localStorage.getItem('pjchalita-mic-auto') || 'auto',
+            JOIN_LEAVE_VOLUME: parseInt(localStorage.getItem('pjchalita-join-leave-volume')) || 50,
+            BUTTON_SOUND_VOLUME: parseInt(localStorage.getItem('pjchalita-button-sound-volume')) || 50
         };
         function toggleOwnerMenu() {
             const menu = document.getElementById('owner-menu');
@@ -113,9 +120,11 @@ $trust_link_url = 'https://' . $remote_peer_host . '/peerjs';
         <button id="mic-btn" class="control-btn active" title="ปิด/เปิดไมค์"><i class="bi bi-mic-fill"></i></button>
         <button id="cam-btn" class="control-btn active" title="ปิด/เปิดกล้อง"><i class="bi bi-camera-video-fill"></i></button>
         <button id="screen-share-btn" class="control-btn" title="แชร์หน้าจอ"><i class="bi bi-display"></i></button>
+        <button id="youtube-btn" class="control-btn" title="ดู YouTube"><i class="bi bi-youtube"></i></button>
         <button id="switch-cam-btn" class="control-btn" title="สลับกล้อง"><i class="bi bi-arrow-repeat"></i></button>
         <button id="mini-mode-btn" class="control-btn" title="โหมดหน้าต่างลอย"><i class="bi bi-pip"></i></button>
         <button id="fullscreen-btn" class="control-btn" title="เต็มจอ"><i class="bi bi-fullscreen"></i></button>
+        <a href="settings.php" class="control-btn" title="ตั้งค่า" style="text-decoration: none; color: inherit;"><i class="bi bi-gear-fill"></i></a>
 
         <?php if ($current_user_info['rank'] === 'Owner'): ?>
         <div class="dropdown">
@@ -132,6 +141,40 @@ $trust_link_url = 'https://' . $remote_peer_host . '/peerjs';
         <button id="hang-up-btn" class="control-btn hang-up" title="วางสาย"><i class="bi bi-telephone-x-fill"></i></button>
     </div>
 
+    <div id="youtube-popup-container">
+        <div class="youtube-header">
+            <h5><i class="bi bi-youtube me-2"></i>YouTube Player</h5>
+            <button class="youtube-close-btn" id="youtube-close-btn">&times;</button>
+        </div>
+        <div class="youtube-body">
+            <div class="youtube-main-content">
+                <div class="youtube-player-area">
+                    <div id="youtube-player"></div>
+                </div>
+                <div class="mt-3">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="sync-video-toggle" checked>
+                        <label class="form-check-label" for="sync-video-toggle">ดูกับทุกคนในห้อง</label>
+                    </div>
+                    <div id="collaboration-options" class="ms-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="allow-control-toggle">
+                            <label class="form-check-label" for="allow-control-toggle">อนุญาตให้ทุกคนมีส่วนร่วม</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="youtube-sidebar">
+                <div class="input-group">
+                    <input type="text" id="youtube-search-input" class="form-control" placeholder="ค้นหาวิดีโอ...">
+                    <button class="btn btn-primary" type="button" id="youtube-search-btn"><i class="bi bi-search"></i></button>
+                </div>
+                <div id="youtube-search-results">
+                    </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -144,7 +187,8 @@ $trust_link_url = 'https://' . $remote_peer_host . '/peerjs';
     <script src="js/videocall/ScreenshotModule.js"></script>
     <script src="js/videocall/HistoryModule.js"></script>
     <script src="js/videocall/RecordingModule.js"></script>
-    <script src="js/videocall/room_minivideo_feature.js" defer></script> 
+    <script src="js/videocall/room_minivideo_feature.js" defer></script>
+    <script src="js/videocall/room_youtube.js"></script>
     
     <script src="js/videocall/room_main_fix.js"></script>
     
@@ -187,9 +231,6 @@ $trust_link_url = 'https://' . $remote_peer_host . '/peerjs';
             showUpdatePopup();
         });
 
-        // ***** จุดแก้ไข: ลบส่วนติดตั้งที่ซ้ำซ้อนออก *****
-        // ไม่จำเป็นต้องมี Event Listener `DOMContentLoaded` ที่นี่แล้ว
-        // เพราะ `room_main_fix.js` จะจัดการให้ทั้งหมด
     </script>
 </body>
 </html>

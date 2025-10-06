@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Camera Switch</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .control-btn { padding: 10px; margin: 5px; border: 1px solid #ccc; border-radius: 5px; background: #f0f0f0; cursor: pointer; }
+        .control-btn:hover { background: #e0e0e0; }
+        #video-grid { margin: 20px 0; }
+        video { width: 320px; height: 240px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Test Camera Switch Button</h1>
+    <div id="video-grid"></div>
+    <div id="controls-bar">
+        <button id="switch-cam-btn" class="control-btn" title="สลับกล้อง"><i class="bi bi-arrow-repeat"></i> สลับกล้อง</button>
+        <button id="test-btn" class="control-btn" title="ทดสอบ">ทดสอบ</button>
+    </div>
+
+    <script>
+        // Mock appConfig for testing
+        window.appConfig = {
+            MY_USER_INFO: { uuid: 'test-user-123', nickname: 'Test User' }
+        };
+
+        // Mock streamManager
+        window.streamManager = {
+            availableVideoDevices: [],
+            currentDeviceIndex: 0,
+            isSwitchingCamera: false,
+            myStream: null,
+
+            populateDeviceList: async function() {
+                try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                        throw new Error("enumerateDevices() not supported.");
+                    }
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    this.availableVideoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                    const switchBtn = document.getElementById('switch-cam-btn');
+                    if (switchBtn) {
+                        // Always show button for testing
+                        switchBtn.style.display = 'inline-block';
+                        console.log(`Found ${this.availableVideoDevices.length} camera devices`);
+                    }
+                } catch(e) {
+                    console.error("Could not list devices:", e);
+                }
+            },
+
+            cycleCamera: async function() {
+                console.log("cycleCamera called");
+                if (this.availableVideoDevices.length < 2) {
+                    await this.populateDeviceList();
+                }
+                if (this.availableVideoDevices.length < 2) {
+                    console.log("Only one camera available, cannot switch");
+                    alert("มีกล้องเพียงตัวเดียว ไม่สามารถสลับได้");
+                    return;
+                }
+
+                const nextIndex = (this.currentDeviceIndex + 1) % this.availableVideoDevices.length;
+                const nextDeviceId = this.availableVideoDevices[nextIndex].deviceId;
+                console.log(`Switching from camera ${this.currentDeviceIndex} to ${nextIndex}: ${nextDeviceId}`);
+                await this.switchToDevice(nextDeviceId);
+            },
+
+            switchToDevice: async function(deviceId) {
+                console.log("switchToDevice called with deviceId:", deviceId);
+                alert(`กำลังสลับไปยังกล้อง: ${deviceId}`);
+                // Simplified switching logic for testing
+            }
+        };
+
+        // Mock PeerManager
+        window.PeerManager = {
+            replaceTrack: function(track) {
+                console.log("PeerManager.replaceTrack called");
+            }
+        };
+
+        // Setup button
+        function setupCameraSwitchButton() {
+            const switchBtn = document.getElementById('switch-cam-btn');
+            if (!switchBtn) {
+                console.warn("Camera switch button not found");
+                return;
+            }
+
+            console.log("Setting up camera switch button");
+
+            // Remove any existing event listeners
+            const newBtn = switchBtn.cloneNode(true);
+            switchBtn.parentNode.replaceChild(newBtn, switchBtn);
+
+            // Simple click handler for testing
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Camera switch button clicked");
+                if (typeof window.streamManager.cycleCamera === 'function') {
+                    window.streamManager.cycleCamera();
+                }
+            });
+
+            console.log("Camera switch button setup completed");
+        }
+
+        // Test button
+        document.getElementById('test-btn').addEventListener('click', function() {
+            alert('ปุ่มทดสอบทำงานได้');
+            console.log('Test button clicked');
+        });
+
+        // Initialize
+        window.addEventListener('load', function() {
+            console.log("Page loaded, initializing camera switch test");
+            window.streamManager.populateDeviceList();
+            setupCameraSwitchButton();
+        });
+    </script>
+</body>
+</html>

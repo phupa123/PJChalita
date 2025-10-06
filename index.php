@@ -124,6 +124,7 @@ $avatar = get_avatar_url($avatarRaw);
                     <a href="profile.php" class="btn btn-outline-light"><i class="bi bi-person-gear me-2"></i>จัดการโปรไฟล์</a>
                     <a href="quick-login-auth.php" class="btn btn-outline-info"><i class="bi bi-grid-3x2-gap-fill me-2"></i>Quick Login</a>
                     <a href="index_folder/Scores/MyScore.php" class="btn btn-success btn-lg"><i class="bi bi-trophy me-2"></i>คะแนนของฉัน</a>
+                    <a href="settings.php" class="btn btn-warning btn-lg"><i class="bi bi-gear me-2"></i>ตั้งค่า</a>
                 </div>
 
             <?php else: ?>
@@ -156,6 +157,7 @@ $avatar = get_avatar_url($avatarRaw);
 <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1050;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/volume.js"></script>
 <?php if ($isLoggedIn): ?>
 <script src="js/rewards.js" defer></script>
 <?php endif; ?>
@@ -250,6 +252,14 @@ window.__CURRENT_ACCOUNT = {
 </div>
 
 <script src="js/mailbox.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sound effects using global volume manager
+    document.addEventListener('click', () => volumeManager.playButtonSound());
+    document.addEventListener('touchstart', () => volumeManager.playButtonSound());
+});
+</script>
 
 </body>
 </html>

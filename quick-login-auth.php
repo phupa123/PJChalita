@@ -154,6 +154,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     </div>
 </footer>
 
+<script src="js/volume.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
     // Views & Elements

@@ -309,5 +309,14 @@ $mysqli->close();
 <script src="js/effects.js" defer></script>
 <script src="js/Switch_Account.js" defer></script>
 
+<script src="js/volume.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sound effects using global volume manager
+    document.addEventListener('click', () => volumeManager.playButtonSound());
+    document.addEventListener('touchstart', () => volumeManager.playButtonSound());
+});
+</script>
+
 </body>
 </html>

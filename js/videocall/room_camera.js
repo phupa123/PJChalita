@@ -44,23 +44,84 @@
             if (this.isSwitchingCamera || !this.myStream) return;
             this.isSwitchingCamera = true;
             try {
-                const constraints = { video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false };
-                const newMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-                const newVideoTrack = newMediaStream.getVideoTracks()[0];
-                
-                const oldVideoTrack = this.myStream.getVideoTracks()[0];
-                this.myStream.removeTrack(oldVideoTrack);
-                oldVideoTrack.stop();
-                this.myStream.addTrack(newVideoTrack);
-                
-                PeerManager.replaceTrack(newVideoTrack);
-                
+                // Get reference to video element
                 const myVideoEl = document.querySelector(`#${window.appConfig.MY_USER_INFO.uuid} video`);
-                if(myVideoEl) myVideoEl.srcObject = new MediaStream([newVideoTrack, ...this.myStream.getAudioTracks()]);
-                
+                if (!myVideoEl) throw new Error("Video element not found");
+
+                // Pause video and clear srcObject to release camera
+                myVideoEl.pause();
+                myVideoEl.srcObject = null;
+
+                // Stop all existing video tracks completely
+                const oldVideoTracks = this.myStream.getVideoTracks();
+                oldVideoTracks.forEach(track => {
+                    track.stop();
+                    this.myStream.removeTrack(track);
+                });
+
+                // Force garbage collection hint and wait for camera release
+                if (window.gc) window.gc();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Get new video stream with retry logic
+                let newVideoStream;
+                let retries = 5;
+                const videoConstraints = {
+                    deviceId: { exact: deviceId },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                };
+
+                while (retries > 0) {
+                    try {
+                        newVideoStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+                        break;
+                    } catch (retryError) {
+                        retries--;
+                        console.log(`Camera access failed, retrying... (${retries} attempts left)`, retryError);
+                        if (retries > 0) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        } else {
+                            throw retryError;
+                        }
+                    }
+                }
+
+                const newVideoTrack = newVideoStream.getVideoTracks()[0];
+                if (!newVideoTrack) throw new Error("No video track in new stream");
+
+                // Add the new video track to the existing stream
+                this.myStream.addTrack(newVideoTrack);
+
+                // Update video element with the complete stream
+                myVideoEl.srcObject = this.myStream;
+
+                // Ensure video plays
+                try {
+                    await myVideoEl.play();
+                } catch (playError) {
+                    console.warn("Could not autoplay video:", playError);
+                }
+
+                // Replace track in peer connections
+                PeerManager.replaceTrack(newVideoTrack);
+
+                // Update device index
                 this.currentDeviceIndex = this.availableVideoDevices.findIndex(d => d.deviceId === deviceId);
+
+                console.log("Camera switched successfully to device:", deviceId);
             } catch(e) {
                 console.error("Failed to switch camera:", e);
+                // Try to restore video functionality
+                try {
+                    const myVideoEl = document.querySelector(`#${window.appConfig.MY_USER_INFO.uuid} video`);
+                    if (myVideoEl && this.myStream) {
+                        myVideoEl.srcObject = this.myStream;
+                        myVideoEl.play().catch(() => {});
+                    }
+                } catch (restoreError) {
+                    console.error("Failed to restore video after camera switch error:", restoreError);
+                }
                 Swal.fire('ผิดพลาด', 'ไม่สามารถสลับกล้องได้', 'error');
             } finally {
                 this.isSwitchingCamera = false;

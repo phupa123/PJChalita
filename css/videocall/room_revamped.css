@@ -213,6 +213,12 @@ body {
     transform: translateX(-50%) translateY(150%);
 }
 
+/* Collapsed state for controls bar */
+#controls-bar.collapsed {
+    transform: translateX(-50%) translateY(200%) !important;
+    opacity: 0.3;
+}
+
 @keyframes slideUp {
     to { transform: translateX(-50%) translateY(0); }
 }
@@ -395,51 +401,4 @@ body {
     #controls-bar { bottom: 10px; }
     #toast-container { top: 75px; right: 10px; }
     #version-indicator { bottom: 5px; right: 5px; font-size: 10px; }
-} 
-
-/* Fullscreen Styles */
-:fullscreen video {
-    object-fit: cover;
-}
-
-:fullscreen video::-webkit-media-controls,
-:fullscreen video::-webkit-media-controls-panel,
-:fullscreen video::-webkit-media-controls-play-button,
-:fullscreen video::-webkit-media-controls-pause-button,
-:fullscreen video::-webkit-media-controls-current-time-display,
-:fullscreen video::-webkit-media-controls-time-remaining-display,
-:fullscreen video::-webkit-media-controls-timeline,
-:fullscreen video::-webkit-media-controls-volume-slider,
-:fullscreen video::-webkit-media-controls-mute-button,
-:fullscreen video::-webkit-media-controls-fullscreen-button {
-    display: none !important;
-}
-
-:fullscreen video::-moz-media-controls {
-    display: none !important;
-}
-
-/* Show controls-bar in fullscreen mode */
-.fullscreen-active #controls-bar {
-    display: flex !important;
-    position: fixed !important;
-    bottom: 20px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    z-index: 10000 !important;
-    background: rgba(20, 22, 28, 0.7) !important;
-    backdrop-filter: blur(15px) !important;
-    border-radius: 24px !important;
-    padding: 10px !important;
-    gap: 10px !important;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5) !important;
-}
-
-.fullscreen-active #controls-bar.collapsed {
-    transform: translateX(-50%) translateY(calc(100% + 30px)) !important;
-}
-
-/* Hide video player controls and bottom overlays in fullscreen */
-.fullscreen-active .status-icons {
-    display: none !important;
 }

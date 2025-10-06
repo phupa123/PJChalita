@@ -25,7 +25,7 @@
 
     // --- UI Manager (จัดการหน้าเว็บ) ---
     const ui = (() => {
-        const els = { grid: document.getElementById('video-grid'), overlay: document.getElementById('status-overlay'), statusText: document.getElementById('status-text'), statusIcon: document.getElementById('status-icon'), trustLink: document.getElementById('trust-link'), micBtn: document.getElementById('mic-btn'), camBtn: document.getElementById('cam-btn'), screenBtn: document.getElementById('screen-share-btn'), switchCamBtn: document.getElementById('switch-cam-btn'), hangUpBtn: document.getElementById('hang-up-btn'), captureBtn: document.getElementById('capture-btn'), historyBtn: document.getElementById('history-btn'), miniModeBtn: document.getElementById('mini-mode-btn'), fullscreenBtn: document.getElementById('fullscreen-btn'), statusBox: null };
+        const els = { grid: document.getElementById('video-grid'), overlay: document.getElementById('status-overlay'), statusText: document.getElementById('status-text'), statusIcon: document.getElementById('status-icon'), trustLink: document.getElementById('trust-link'), micBtn: document.getElementById('mic-btn'), camBtn: document.getElementById('cam-btn'), screenBtn: document.getElementById('screen-share-btn'), switchCamBtn: document.getElementById('switch-cam-btn'), hangUpBtn: document.getElementById('hang-up-btn'), captureBtn: document.getElementById('capture-btn'), historyBtn: document.getElementById('history-btn'), miniModeBtn: document.getElementById('mini-mode-btn'), fullscreenBtn: document.getElementById('fullscreen-btn'), youtubeBtn: document.getElementById('youtube-btn'), statusBox: null };
         return {
             updateConnectionStatus(type, message) {
                 if (!els.overlay || !els.statusText || !els.statusIcon) return;
@@ -34,7 +34,7 @@
                 els.statusText.textContent = message;
                 if (type === 'connected') {
                     setTimeout(() => els.overlay.classList.add('hidden'), 1500);
-                    if (els.trustLink) els.trustLink.classList.add('hidden');
+                    if (els.trustLink) els.trustLink.style.display = 'none';
                 } else {
                     els.overlay.classList.remove('hidden');
                 }
@@ -80,7 +80,7 @@
                     });
                 }
             },
-            showTrustLink() { if (els.trustLink) { els.trustLink.classList.remove('hidden'); } },
+            showTrustLink() { if (els.trustLink) { els.trustLink.style.display = 'inline-flex'; } },
             showToast(message, type = 'info') {
                 const container = document.getElementById('toast-container');
                 if (!container) return;
@@ -95,12 +95,36 @@
                 }, 4000);
             },
             setupControls(callbacks) {
-                els.micBtn?.addEventListener('click', callbacks.toggleAudio);
-                els.camBtn?.addEventListener('click', callbacks.toggleVideo);
-                els.screenBtn?.addEventListener('click', callbacks.shareScreen);
-                els.miniModeBtn?.addEventListener('click', callbacks.toggleMiniMode);
-                els.hangUpBtn?.addEventListener('click', callbacks.leave);
-                // Double-click fullscreen removed as per user request
+                // Helper function to add button sound events
+                const addButtonSounds = (button, callback) => {
+                    if (!button) return;
+                    let clickCount = 0;
+                    button.addEventListener('click', (e) => {
+                        clickCount++;
+                        setTimeout(() => {
+                            if (clickCount === 1) {
+                                // Single click - play button_input.mp3 (respect Settings volume)
+                                volumeManager.playButtonInputSound();
+                                callback(e);
+                            } else if (clickCount === 2) {
+                                // Double click - play button_output.mp3 (respect Settings volume)
+                                volumeManager.playButtonOutputSound();
+                                callback(e);
+                            }
+                            clickCount = 0;
+                        }, 300); // Reset after 300ms
+                    });
+                };
+
+                addButtonSounds(els.micBtn, callbacks.toggleAudio);
+                addButtonSounds(els.camBtn, callbacks.toggleVideo);
+                addButtonSounds(els.screenBtn, callbacks.shareScreen);
+                addButtonSounds(els.miniModeBtn, callbacks.toggleMiniMode);
+                addButtonSounds(els.hangUpBtn, callbacks.leave);
+                
+                if (els.youtubeBtn) {
+                    els.youtubeBtn.addEventListener('click', callbacks.openYoutubeModal);
+                }
             },
             addVideo(uuid, stream, name, isLocal) {
                 if (!els.grid) return;
@@ -118,7 +142,7 @@
                 box.className = 'video-container';
                 if (isLocal) { box.classList.add('mirror'); }
                 
-                box.innerHTML = `<video playsinline autoplay ${isLocal ? 'muted' : ''}></video><div class="video-overlay"><div class="status-icons"><i class="bi bi-mic-mute-fill icon-mic-muted" style="display:none;"></i><i class="bi bi-camera-video-off-fill icon-cam-off" style="display:none;"></i></div><div class="name-tag">${isLocal ? `${name} (คุณ)` : name}</div></div><div class="camera-off-overlay"><i class="bi bi-camera-video-off-fill"></i></div>`;
+                box.innerHTML = `<video playsinline autoplay ${isLocal ? 'muted' : ''}></video><div class="video-overlay"><div class="status-icons"><i class="bi bi-mic-mute-fill icon-mic-muted" style="display:none;"></i><i class="bi bi-camera-video-off-fill icon-cam-off" style="display:none;"></i></div><div class="name-tag">${isLocal ? `${name} (คุณ)` : name}</div></div><div class="camera-off-overlay"><i class="bi bi-camera-video-off-fill"></i></div><div class="owner-camera-off-icon" style="position: absolute; top: 10px; right: 10px; display: none; background: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 50%; font-size: 18px;"><i class="bi bi-camera-video-off-fill"></i></div>`;
                 const videoElement = box.querySelector('video');
                 if(stream) videoElement.srcObject = stream;
                 videoElement.muted = isLocal;
@@ -161,23 +185,43 @@
             updateStatus(uuid, status) {
                 const box = document.getElementById(uuid);
                 if (!box) return;
+
                 const micIcon = box.querySelector('.icon-mic-muted');
                 const camIcon = box.querySelector('.icon-cam-off');
                 const overlay = box.querySelector('.camera-off-overlay');
-                const isCamOff = !status.isVideoEnabled;
+                const ownerIcon = box.querySelector('.owner-camera-off-icon');
 
-                if (micIcon) micIcon.style.display = status.isAudioEnabled ? 'none' : 'inline';
-                // Show cam off icon for Owner viewing others when camera is off
+                // --- จุดแก้ไข: ปรับปรุง Logic การแสดงผลไอคอน ---
+                const camBtn = document.getElementById('cam-btn');
+                const isCamBtnActive = camBtn ? camBtn.classList.contains('active') : true;
+                const isMicOff = status.isAudioEnabled === false;
+
+                // Determine user rank
+                const isMyOwnCard = uuid === window.appConfig.MY_USER_INFO.uuid;
+                const viewerRank = window.appConfig.MY_USER_INFO.rank;
+                const isOwner = viewerRank === 'Owner';
+
+                const isCamOff = isMyOwnCard ? !isCamBtnActive : (status.visualVideoState !== undefined ? !status.visualVideoState : status.isVideoEnabled === false);
+
+                if (micIcon) {
+                    micIcon.style.display = isMicOff ? 'inline-block' : 'none';
+                }
                 if (camIcon) {
-                    if (window.appConfig.MY_USER_INFO.rank === 'Owner') {
-                        camIcon.style.display = isCamOff ? 'inline' : 'none';
-                    } else if (uuid === window.appConfig.MY_USER_INFO.uuid) {
-                        camIcon.style.display = isCamOff ? 'inline' : 'none';
+                    camIcon.style.display = isCamOff ? 'inline-block' : 'none';
+                }
+
+                // Handle overlay and owner icon
+                if (overlay && ownerIcon) {
+                    if (isOwner && !isMyOwnCard) {
+                        // For remote users viewed by Owner: hide overlay, show top-right icon when camera is off
+                        overlay.classList.remove('visible');
+                        ownerIcon.style.display = isCamOff ? 'block' : 'none';
                     } else {
-                        camIcon.style.display = 'none';
+                        // For local user or remote users viewed by regular users: show overlay when camera is off
+                        overlay.classList.toggle('visible', isCamOff);
+                        ownerIcon.style.display = 'none';
                     }
                 }
-                if (overlay && uuid === window.appConfig.MY_USER_INFO.uuid) overlay.classList.toggle('visible', isCamOff);
             },
             removeVideo(uuid) { const box = document.getElementById(uuid); if (box) box.remove(); },
             updateMic(isEnabled) {
@@ -249,76 +293,11 @@
                 const box = document.getElementById(uuid);
                 if (!box) return;
                 if (document.fullscreenElement) {
-                    document.exitFullscreen().then(() => {
-                        document.body.classList.remove('fullscreen-active');
-                        ui.clearFullscreenControlsTimer();
-                        ui.removeFullscreenActivityListeners();
-                        console.log('Exited fullscreen, removed fullscreen-active class');
-                    }).catch(err => console.error('Error attempting to exit full-screen mode:', err));
+                    document.exitFullscreen().catch(err => console.error('Error attempting to exit full-screen mode:', err));
                 } else {
-                    box.requestFullscreen().then(() => {
-                        document.body.classList.add('fullscreen-active');
-                        // Force controls-bar to be visible in fullscreen
-                        const controlsBar = document.getElementById('controls-bar');
-                        if (controlsBar) {
-                            controlsBar.classList.remove('collapsed');
-                            controlsBar.classList.add('fullscreen-visible');
-                        }
-                        ui.startFullscreenControlsTimer();
-                        ui.addFullscreenActivityListeners();
-                        console.log('Entered fullscreen, added fullscreen-active class');
-                    }).catch(err => console.error('Error attempting to enable full-screen mode:', err));
+                    box.requestFullscreen().catch(err => console.error('Error attempting to enable full-screen mode:', err));
                 }
             },
-            // --- [เพิ่ม] ฟังก์ชันจัดการ Controls Bar ใน Fullscreen ---
-            startFullscreenControlsTimer: () => {
-                ui.clearFullscreenControlsTimer();
-                ui.fullscreenControlsTimeout = setTimeout(() => {
-                    const controlsBar = document.getElementById('controls-bar');
-                    if (controlsBar && document.fullscreenElement) {
-                        controlsBar.classList.remove('fullscreen-visible');
-                    }
-                }, 3000); // ซ่อนหลังจาก 3 วินาที
-            },
-            clearFullscreenControlsTimer: () => {
-                if (ui.fullscreenControlsTimeout) {
-                    clearTimeout(ui.fullscreenControlsTimeout);
-                    ui.fullscreenControlsTimeout = null;
-                }
-            },
-            showFullscreenControls: () => {
-                if (!document.fullscreenElement) return;
-                const controlsBar = document.getElementById('controls-bar');
-                if (controlsBar) {
-                    controlsBar.classList.add('fullscreen-visible');
-                    ui.startFullscreenControlsTimer();
-                }
-            },
-            addFullscreenActivityListeners: () => {
-                ui.removeFullscreenActivityListeners(); // Remove any existing listeners first
-
-                // Add listeners for user activity
-                ui.fullscreenActivityHandler = (e) => {
-                    // Only show controls if it's not a click on the controls themselves
-                    if (!e.target.closest('#controls-bar')) {
-                        ui.showFullscreenControls();
-                    }
-                };
-
-                document.addEventListener('mousemove', ui.fullscreenActivityHandler);
-                document.addEventListener('touchstart', ui.fullscreenActivityHandler);
-                document.addEventListener('touchmove', ui.fullscreenActivityHandler);
-                document.addEventListener('keydown', ui.fullscreenActivityHandler);
-            },
-            removeFullscreenActivityListeners: () => {
-                if (ui.fullscreenActivityHandler) {
-                    document.removeEventListener('mousemove', ui.fullscreenActivityHandler);
-                    document.removeEventListener('touchstart', ui.fullscreenActivityHandler);
-                    document.removeEventListener('touchmove', ui.fullscreenActivityHandler);
-                    document.removeEventListener('keydown', ui.fullscreenActivityHandler);
-                    ui.fullscreenActivityHandler = null;
-                }
-            }
         };
     })();
 
@@ -334,7 +313,7 @@
                 window.streamManager.onRemoteStatusUpdate(id, data.status);
             } else if (data?.type === 'request-status') {
                 peers.sendToPeer(id, { type: 'status-update', status: window.streamManager.getCurrentStatus() });
-            } 
+            }
             // --- [เพิ่ม] จัดการ Event การแชร์หน้าจอ ---
             else if (data?.type === 'screen-sharing-start') {
                 const userContainer = document.getElementById(data.uuid);
@@ -342,6 +321,16 @@
             } else if (data?.type === 'screen-sharing-stop') {
                 const userContainer = document.getElementById(data.uuid);
                 if (userContainer) userContainer.classList.remove('screen-sharing');
+            }
+            // --- [เพิ่ม] จัดการเสียงเข้าร่วมและออกจากห้อง ---
+            else if (data?.type === 'play-sound' && id !== window.appConfig.MY_USER_INFO.uuid) {
+                if (data.soundPath === 'sound/videocall/join_room.mp3') {
+                    volumeManager.playJoinSound();
+                } else if (data.soundPath === 'sound/videocall/leave_room.mp3') {
+                    volumeManager.playLeaveSound();
+                } else {
+                    volumeManager.playSound(data.soundPath);
+                }
             }
             dataHandlers.forEach(handler => { try { handler(id, data); } catch (e) { console.warn("Data handler error", e); } });
         };
@@ -450,15 +439,60 @@
                 toggleVideo: () => this.toggleVideo(),
                 shareScreen: () => this.shareScreen(),
                 toggleMiniMode: () => this.toggleMiniMode(),
-                leave: () => this.leave()
+                leave: () => this.leave(),
+                openYoutubeModal: () => this.openYoutubeModal() // Add YouTube modal callback
             });
 
+            // Add refresh camera button
+            this.addRefreshCameraButton();
+
             try {
+                // Load user settings for camera and mic auto behavior
+                const cameraAuto = localStorage.getItem('pjchalita-camera-auto') || 'auto';
+                const micAuto = localStorage.getItem('pjchalita-mic-auto') || 'auto';
+
                 const constraints = {
                     video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
                     audio: true
                 };
+
                 this.myStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // Apply initial settings based on user preferences
+                const videoTrack = this.myStream.getVideoTracks()[0];
+                const audioTrack = this.myStream.getAudioTracks()[0];
+
+                // Apply camera setting
+                if (videoTrack) {
+                    let shouldEnableCamera = true;
+                    if (cameraAuto === 'off') {
+                        shouldEnableCamera = false;
+                    } else if (cameraAuto === 'always-off') {
+                        shouldEnableCamera = true; // Camera is on but overlay black box will be shown
+                    }
+                    videoTrack.enabled = shouldEnableCamera;
+                    ui.updateCam(shouldEnableCamera);
+
+                    // If 'always-off' selected, show black overlay box for local user except Owner
+                    if (cameraAuto === 'always-off') {
+                        const isOwner = window.appConfig.MY_USER_INFO.rank === 'Owner';
+                        if (!isOwner) {
+                            const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
+                            if (localBox) {
+                                const overlay = localBox.querySelector('.camera-off-overlay');
+                                if (overlay) overlay.classList.add('visible');
+                            }
+                        }
+                    }
+                }
+
+                // Apply mic setting
+                if (audioTrack) {
+                    const shouldEnableMic = micAuto === 'off' ? false : true;
+                    audioTrack.enabled = shouldEnableMic;
+                    ui.updateMic(shouldEnableMic);
+                }
+
                 ui.addVideo(window.appConfig.MY_USER_INFO.uuid, this.myStream, window.appConfig.MY_USER_INFO.nickname, true);
                 ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
             } catch (e) {
@@ -475,6 +509,69 @@
             window.addEventListener('focus', () => {
                 if (this.peer && !this.peer.open && !this.isLeaving) this.performFullReconnect();
             });
+        },
+
+        addRefreshCameraButton() {
+            const controlsBar = document.getElementById('controls-bar');
+            if (!controlsBar) return;
+
+            // Check if button already exists
+            if (document.getElementById('refresh-cam-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.id = 'refresh-cam-btn';
+            btn.className = 'control-btn';
+            btn.title = 'รีเฟรชกล้อง';
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+            btn.style.marginLeft = '5px';
+
+            btn.addEventListener('click', async () => {
+                try {
+                    // Stop all current video tracks
+                    if (this.myStream) {
+                        this.myStream.getVideoTracks().forEach(track => track.stop());
+                    }
+                    // Get new video stream with same constraints
+                    const constraints = {
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+                        audio: false
+                    };
+                    const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    const newVideoTrack = newStream.getVideoTracks()[0];
+                    if (!newVideoTrack) throw new Error('No video track found');
+
+                    // Replace video track in current stream
+                    if (this.myStream) {
+                        this.myStream.removeTrack(this.myStream.getVideoTracks()[0]);
+                        this.myStream.addTrack(newVideoTrack);
+                    }
+
+                    // Replace track in peer connections
+                    peers.replaceTrack(newVideoTrack);
+
+                    // Update UI video element
+                    const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
+                    if (localBox) {
+                        const video = localBox.querySelector('video');
+                        if (video) {
+                            video.srcObject = null;
+                            video.srcObject = this.myStream;
+                            video.play().catch(() => {});
+                        }
+                    }
+
+                    // Update status UI
+                    ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
+
+                    // Show toast notification
+                    ui.showToast('รีเฟรชกล้องเรียบร้อยแล้ว', 'success');
+                } catch (error) {
+                    console.error('Error refreshing camera:', error);
+                    ui.showToast('ไม่สามารถรีเฟรชกล้องได้', 'error');
+                }
+            });
+
+            controlsBar.insertBefore(btn, controlsBar.querySelector('#mini-mode-btn'));
         },
 
         performInitialConnect() {
@@ -518,6 +615,9 @@
             const res = await API.join(window.appConfig.ROOM_ID);
             if (res.status === 'success' && Array.isArray(res.peers)) {
                 ui.updateConnectionStatus('connected', 'เชื่อมต่อสำเร็จ!');
+                // Play join room sound locally and broadcast to others
+                volumeManager.playJoinSound();
+                peers.broadcast({ type: 'play-sound', soundPath: 'sound/videocall/join_room.mp3' });
                 res.peers.forEach(p => {
                     if (p.uuid !== window.appConfig.MY_USER_INFO.uuid) {
                         this.peerInfo[p.uuid] = { nickname: p.nickname, rank: p.rank };
@@ -533,6 +633,9 @@
         leave() {
             if (this.isLeaving) return;
             this.isLeaving = true;
+            // Play leave room sound locally and broadcast to others
+            volumeManager.playLeaveSound();
+            peers.broadcast({ type: 'play-sound', soundPath: 'sound/videocall/leave_room.mp3' });
             API.leave(window.appConfig.ROOM_ID);
             this.peer?.destroy();
             window.location.href = 'VideoCall.php';
@@ -576,6 +679,23 @@
                 isVideoEnabled: videoTrack ? videoTrack.enabled : false,
             };
         },
+        // --- [เพิ่ม] โหมดหน้าต่างลอย (Picture-in-Picture) ---
+        async toggleMiniMode() {
+            try {
+                const myVideoEl = document.querySelector(`#${window.appConfig.MY_USER_INFO.uuid} video`);
+                if (!myVideoEl || !document.pictureInPictureEnabled) {
+                    await Swal.fire('ไม่รองรับ', 'โหมดหน้าต่างลอยไม่รองรับในเบราว์เซอร์นี้', 'info');
+                    return;
+                }
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    await myVideoEl.requestPictureInPicture();
+                }
+            } catch (e) {
+                console.error('PiP failed:', e);
+            }
+        },
         toggleAudio() {
             const track = this.myStream?.getAudioTracks()[0];
             if (!track) return;
@@ -583,25 +703,44 @@
             const status = this.getCurrentStatus();
             ui.updateMic(status.isAudioEnabled);
             ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, status);
-            peers.broadcast({ type: 'status-update', status });
+            let statusToSend = status;
+            if (window.appConfig.MY_USER_INFO.rank !== 'Owner') {
+                const isVisuallyOn = document.getElementById('cam-btn').classList.contains('active');
+                statusToSend = { ...status, visualVideoState: isVisuallyOn };
+            }
+            peers.broadcast({ type: 'status-update', status: statusToSend });
         },
         onRemoteStreamAvailable(id, info, stream) {
             if (info && !this.peerInfo[id]) {
                 this.peerInfo[id] = { ...this.peerInfo[id], nickname: info.nickname, rank: info.rank, stream: stream };
                 ui.showToast(`${info.nickname} ได้เข้าร่วมห้อง`, 'join');
+                // Request status immediately when remote stream becomes available
+                peers.sendToPeer(id, { type: 'request-status' });
             }
         },
         onRemoteStatusUpdate(uuid, status) {
-            const viewerRank = window.appConfig.MY_USER_INFO.rank;
-            const myUuid = window.appConfig.MY_USER_INFO.uuid;
-            let statusToDisplay = { isAudioEnabled: status.isAudioEnabled };
-            if (viewerRank === 'Owner' && uuid === myUuid) {
-                statusToDisplay.isVideoEnabled = status.realVideoState ?? status.isVideoEnabled;
-            } else {
-                statusToDisplay.isVideoEnabled = status.visualVideoState ?? status.isVideoEnabled;
+            // ?????? Status-icon ?????? Owner ??????????????????????
+            const existingStatus = this.peerInfo[uuid]?.status || {};
+            let statusToDisplay = {
+                isAudioEnabled: status.isAudioEnabled !== undefined ? status.isAudioEnabled : existingStatus.isAudioEnabled,
+                isVideoEnabled: status.visualVideoState ?? status.isVideoEnabled ?? existingStatus.isVideoEnabled
+            };
+
+            if (this.peerInfo[uuid]) {
+                // Update the stored status
+                this.peerInfo[uuid].status = statusToDisplay;
             }
-            if (this.peerInfo[uuid]) this.peerInfo[uuid].status = statusToDisplay;
+
+            // Update the UI for the specific user
             ui.updateStatus(uuid, statusToDisplay);
+
+            // --- จุดแก้ไข: อัปเดตสถานะของ Mini Video ด้วย ---
+            if (window.RoomMiniVideoFeatureModule && typeof window.RoomMiniVideoFeatureModule.updateStatusIfActive === 'function') {
+                window.RoomMiniVideoFeatureModule.updateStatusIfActive(uuid, statusToDisplay);
+            }
+            if (window.RoomMiniVideoModule && typeof window.RoomMiniVideoModule.updateStatusIfActive === 'function') {
+                window.RoomMiniVideoModule.updateStatusIfActive(uuid, statusToDisplay);
+            }
         },
         onRemoteDisconnected(id) {
             const user = this.peerInfo[id];
@@ -611,6 +750,15 @@
                 ui.removeVideo(id);
             }
         },
+        openYoutubeModal() {
+            if (streamManager.openYoutubeModal) {
+                 streamManager.openYoutubeModal();
+            }
+             else {
+                console.warn("YouTube module not ready or missing openModal function.");
+                Swal.fire('YouTube Module Missing', 'ไม่สามารถเปิด YouTube ได้ในขณะนี้', 'warning');
+            }
+        }
     };
 
     // --- Initializer (ตัวเริ่มการทำงาน) ---
@@ -618,16 +766,17 @@
         window.streamManager = manager;
         window.UIManager = ui; // --- [เพิ่ม] ทำให้ UIManager เป็น Global ---
         const modules = [
-            'RoomCameraModule', 
-            'RoomShareScreenModule', 
-            'RoomReconnectModule', 
-            'RoomKickModule', 
-            'UploadModule', 
-            'ScreenshotModule', 
-            'HistoryModule', 
-            'RecordingModule', 
+            'RoomCameraSwitchModule',
+            'RoomShareScreenModule',
+            'RoomReconnectModule',
+            'RoomKickModule',
+            'UploadModule',
+            'ScreenshotModule',
+            'HistoryModule',
+            'RecordingModule',
             'RoomLogsModule',
-            'RoomMiniVideoFeatureModule'
+            'RoomMiniVideoFeatureModule',
+            'RoomYoutubeModule'
         ];
         modules.forEach(modName => {
             if (window[modName]?.install) {
@@ -638,38 +787,39 @@
                 }
             }
         });
-        
-        const switchBtn = document.getElementById('switch-cam-btn');
-        if (switchBtn) {
-            let pressTimer = null; let isLongPress = false;
-            const startPress = (e) => {
-                isLongPress = false; e.preventDefault();
-                pressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    if(typeof manager.showCameraMenu === 'function') manager.showCameraMenu();
-                }, 500);
-            };
-            const endPress = (e) => {
-                clearTimeout(pressTimer);
-                if (e.type === 'touchend' && !isLongPress) {
-                    if(typeof manager.cycleCamera === 'function') manager.cycleCamera();
-                }
-            };
-            switchBtn.addEventListener('click', (e) => {
-                const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-                if(!isTouch && !isLongPress) {
-                    if(typeof manager.cycleCamera === 'function') manager.cycleCamera();
-                }
-            });
-            switchBtn.addEventListener('mousedown', startPress);
-            switchBtn.addEventListener('mouseup', endPress);
-            switchBtn.addEventListener('mouseleave', endPress);
-            switchBtn.addEventListener('touchstart', startPress, { passive: false });
-            switchBtn.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                if(typeof manager.showCameraMenu === 'function') manager.showCameraMenu();
-            });
+
+        // --- จุดแก้ไข: เพิ่ม Event Listener สำหรับ Fullscreen และควบคุม Controls Bar ---
+        let fullscreenControlsTimer = null;
+        function showFullscreenControlsBar() {
+            const controlsBarEl = document.getElementById('controls-bar');
+            if (!controlsBarEl) return;
+            controlsBarEl.classList.add('fullscreen-visible');
+            if (fullscreenControlsTimer) clearTimeout(fullscreenControlsTimer);
+            fullscreenControlsTimer = setTimeout(() => {
+                controlsBarEl.classList.remove('fullscreen-visible');
+            }, 2500);
         }
+        document.addEventListener('fullscreenchange', () => {
+            // Refresh all statuses on fullscreen enter or exit
+            const myStatus = manager.getCurrentStatus();
+            ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, myStatus);
+
+            for (const uuid in manager.peerInfo) {
+                if (manager.peerInfo[uuid].status) {
+                    ui.updateStatus(uuid, manager.peerInfo[uuid].status);
+                }
+            }
+            // Show controls briefly when entering fullscreen
+            if (document.fullscreenElement) {
+                showFullscreenControlsBar();
+            }
+        });
+        // Show/hide controls on user activity during fullscreen
+        ['mousemove','touchstart','touchmove','keydown'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                if (document.fullscreenElement) showFullscreenControlsBar();
+            }, { passive: true });
+        });
 
         const toggleControlsBtn = document.getElementById('toggle-controls-btn');
         const controlsBar = document.getElementById('controls-bar');
@@ -690,10 +840,12 @@
             ownerHistoryBtn.addEventListener('click', (e) => { e.preventDefault(); manager.showHistory(); });
         }
 
-        // Fullscreen Implementation removed as per user request to remove for now
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (fullscreenBtn) {
-            fullscreenBtn.style.display = 'none'; // Hide fullscreen button
+            fullscreenBtn.addEventListener('click', () => {
+                // Default to toggle fullscreen on your own video container
+                window.UIManager.toggleFullScreen(window.appConfig.MY_USER_INFO.uuid);
+            });
         }
 
         manager.start();

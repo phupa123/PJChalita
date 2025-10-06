@@ -450,5 +450,14 @@ $score_history = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             transform: scale(0.95);
         }
     </style>
+
+    <script src="../../js/volume.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sound effects using global volume manager
+        document.addEventListener('click', () => volumeManager.playButtonSound());
+        document.addEventListener('touchstart', () => volumeManager.playButtonSound());
+    });
+    </script>
 </body>
 </html>
