@@ -43,9 +43,9 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <div class="d-flex align-items-center">
-                        <a href="index.php" class="btn btn-outline-primary me-3">
+                        <button onclick="goBack()" class="btn btn-outline-primary me-3">
                             <i class="bi bi-arrow-left me-1"></i>ย้อนกลับ
-                        </a>
+                        </button>
                         <h1 class="h2 mb-0">ตั้งค่า</h1>
                     </div>
                     <div class="btn-toolbar mb-2 mb-md-0">
@@ -115,6 +115,9 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                                         <label class="form-label">ระดับเสียง: <span id="button-sound-volume-value">50</span>%</label>
                                         <input type="range" class="form-range" id="button-sound-volume" min="0" max="100" value="50">
                                     </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testButtonSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงปุ่ม
+                                    </button>
                                 </div>
                             </div>
                         </div>

@@ -102,6 +102,32 @@
         event.target.classList.add('active');
     }
 
+    // Go back to previous page
+    function goBack() {
+        if (document.referrer && document.referrer !== window.location.href) {
+            window.history.back();
+        } else {
+            // Fallback to index.php if no referrer
+            window.location.href = 'index.php';
+        }
+    }
+
+    // Test button sound with current volume setting
+    function testButtonSound() {
+        try {
+            const buttonSoundVolume = parseInt(localStorage.getItem(SETTINGS_KEYS.buttonSoundVolume)) || DEFAULTS.buttonSoundVolume;
+            const audio = new Audio('sound/general/button-click-289742.mp3');
+            audio.volume = buttonSoundVolume / 100;
+            audio.play().catch(error => {
+                console.warn('Failed to play test sound:', error);
+                showToast('ไม่สามารถเล่นเสียงได้', 'warning');
+            });
+        } catch (error) {
+            console.error('Error testing button sound:', error);
+            showToast('เกิดข้อผิดพลาดในการทดสอบเสียง', 'error');
+        }
+    }
+
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         loadSettings();
@@ -123,6 +149,8 @@
         // Make functions global
         window.resetSettings = resetSettings;
         window.showSection = showSection;
+        window.goBack = goBack;
+        window.testButtonSound = testButtonSound;
     });
 
 })();
