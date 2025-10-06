@@ -1,0 +1,284 @@
+/* Settings Page Styles - Modern Design */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --dark-bg: #101116;
+    --card-bg: #181a20;
+    --primary-accent: #4a72ff;
+    --secondary-accent: #33ff9c;
+    --text-light: #e0e6f0;
+    --text-muted: #8a99b8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(74, 114, 255, 0.1);
+}
+
+body {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1d23 100%);
+    color: var(--text-light);
+    font-family: 'Kanit', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, var(--card-bg) 0%, #202328 100%);
+    min-height: 100vh;
+    padding-top: 2rem;
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar h5 {
+    color: var(--text-light);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar .nav-link {
+    color: var(--text-muted);
+    padding: 1rem 1.5rem;
+    margin: 0.25rem 1rem;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--hover-bg), transparent);
+    transition: left 0.5s;
+}
+
+.sidebar .nav-link:hover::before {
+    left: 100%;
+}
+
+.sidebar .nav-link:hover {
+    color: var(--text-light);
+    background: var(--hover-bg);
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(74, 114, 255, 0.2);
+}
+
+.sidebar .nav-link.active {
+    color: var(--text-light);
+    background: linear-gradient(135deg, var(--primary-accent), #3d6dfd);
+    box-shadow: 0 5px 20px rgba(74, 114, 255, 0.4);
+    transform: translateX(8px);
+}
+
+.settings-section {
+    margin-bottom: 3rem;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-section h3 {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-accent);
+    position: relative;
+}
+
+.settings-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--primary-accent);
+}
+
+.card-title {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.card-title::before {
+    content: '⚙️';
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-select, .form-range {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-light);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus, .form-range:focus {
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 0 3px rgba(74, 114, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.form-select option {
+    background: var(--card-bg);
+    color: var(--text-light);
+}
+
+/* Custom range slider styling */
+.form-range::-webkit-slider-thumb {
+    background: var(--primary-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-range::-webkit-slider-thumb:hover {
+    background: var(--secondary-accent);
+    transform: scale(1.2);
+}
+
+.form-range::-webkit-slider-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+/* Back button styling */
+.btn-outline-primary {
+    border: 2px solid var(--primary-accent);
+    color: var(--primary-accent);
+    background: transparent;
+    border-radius: 12px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    font-weight: 500;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-accent);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 114, 255, 0.4);
+}
+
+/* Reset button styling */
+.btn-outline-secondary {
+    border: 2px solid var(--text-muted);
+    color: var(--text-muted);
+    background: transparent;
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--text-muted);
+    color: var(--dark-bg);
+    border-color: var(--text-muted);
+}
+
+/* Toast notifications */
+.toast-container {
+    z-index: 1060;
+}
+
+.toast {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 1rem;
+    }
+
+    .sidebar .nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 1rem;
+    }
+
+    .sidebar .nav-link {
+        white-space: nowrap;
+        margin: 0.25rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .settings-section h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Loading animation */
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.loading {
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite;
+}
