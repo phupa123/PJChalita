@@ -258,7 +258,7 @@ if ($is_zrok_access) {
             <div class="game-center-main">
                 <div class="game-list">
                     <div class="game-card" id="play-xoxo-game" data-category="board">
-                        <div class="game-card-image-wrapper" style="background-image: url('https://i.imgur.com/k4d3xAn.png');"></div>
+                        <div class="game-card-image-wrapper"></div>
                         <div class="game-card-content">
                             <h3>เกม XO</h3>
                             <p>เกม XO สุดคลาสสิก เล่นพร้อมกันในห้อง</p>

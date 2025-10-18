@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="game-body">
                 <div class="game-grid">
                     <div class="game-card" id="play-xoxo-btn">
-                        <img src="https://i.imgur.com/k4d3xAn.png" alt="XOXO Game" class="game-card-image">
+                        <div class="game-card-image"></div>
                         <h3>XOXO Game</h3>
                         <p>เกม XO สุดคลาสสิก เล่นพร้อมกันในห้อง</p>
                         <span class="play-btn"><i class="bi bi-play-circle-fill me-1"></i>เล่นเลย</span>
