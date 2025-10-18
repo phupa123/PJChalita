@@ -271,6 +271,34 @@
 .hot-coin-face.front::before { content:'หัว'; }
 .hot-coin-face.back { display:none; }
 
+/* XOXO animation canvas */
+.xoxo-bg { background: linear-gradient(135deg, #38bdf8, #3b82f6); display:flex; justify-content:center; align-items:center; }
+.xoxo-animation-canvas { position: relative; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+.xoxo-symbols { position: relative; display: flex; gap: 20px; }
+.xoxo-x, .xoxo-o { font-size: 3rem; font-weight: bold; color: #fff; text-shadow: 0 4px 8px rgba(0,0,0,0.5); animation: xoxoFloat 3s ease-in-out infinite; }
+.xoxo-x { animation-delay: 0s; }
+.xoxo-o { animation-delay: 1.5s; }
+
+@keyframes xoxoFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* RPS animation canvas */
+.rps-bg { background: linear-gradient(135deg, #f59e0b, #ef4444); display:flex; justify-content:center; align-items:center; }
+.rps-animation-canvas { position: relative; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+.rps-symbols { position: relative; display: flex; gap: 15px; }
+.rps-rock, .rps-paper, .rps-scissors { font-size: 3rem; animation: rpsShake 2s ease-in-out infinite; }
+.rps-rock { animation-delay: 0s; }
+.rps-paper { animation-delay: 0.67s; }
+.rps-scissors { animation-delay: 1.33s; }
+
+@keyframes rpsShake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-5px) rotate(-5deg); }
+    75% { transform: translateX(5px) rotate(5deg); }
+}
+
 /* Emoji Sender button */
 .emoji-sender #gc-send-emoji-btn { display:inline-flex; align-items:center; gap:8px; border-radius:12px; background: linear-gradient(135deg, #22c55e, #16a34a); border:none; padding: 8px 12px; box-shadow: 0 6px 16px rgba(34,197,94,.3); }
 .emoji-sender #gc-send-emoji-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }

@@ -259,7 +259,14 @@ if ($is_zrok_access) {
             <div class="game-center-main">
                 <div class="game-list">
                     <div class="game-card" id="play-xoxo-game" data-category="board">
-                        <div class="game-card-image-wrapper"></div>
+                        <div class="game-card-image-wrapper xoxo-bg">
+                            <div class="xoxo-animation-canvas">
+                                <div class="xoxo-symbols">
+                                    <span class="xoxo-x">X</span>
+                                    <span class="xoxo-o">O</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="game-card-content">
                             <h3>เกม XO</h3>
                             <p>เกม XO สุดคลาสสิก เล่นพร้อมกันในห้อง</p>
@@ -282,7 +289,15 @@ if ($is_zrok_access) {
                         </div>
                     </div>
                     <div class="game-card" id="play-rockpaperscissors-game" data-category="action">
-                        <div class="game-card-image-wrapper"></div>
+                        <div class="game-card-image-wrapper rps-bg">
+                            <div class="rps-animation-canvas">
+                                <div class="rps-symbols">
+                                    <span class="rps-rock">✊</span>
+                                    <span class="rps-paper">✋</span>
+                                    <span class="rps-scissors">✌️</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="game-card-content">
                             <h3>Rock Paper Scissors</h3>
                             <p>เกมเป่ายิ่งฉุบ วัดความเร็วและโชคชะตา</p>
