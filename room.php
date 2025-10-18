@@ -72,6 +72,7 @@ if ($is_zrok_access) {
     <link rel="stylesheet" href="css/videocall/room_game/game_center.css">
     <link rel="stylesheet" href="css/videocall/room_game/game_xoxo.css">
     <link rel="stylesheet" href="css/videocall/room_game/game_headsortails.css">
+    <link rel="stylesheet" href="css/videocall/room_game/game_rockpaperscissors.css">
 
     <!-- TailwindCSS Local -->
     <link href="./output.css" rel="stylesheet">
@@ -280,6 +281,14 @@ if ($is_zrok_access) {
                             <span class="play-btn"><i class="bi bi-play-circle-fill me-1"></i>เล่นเลย</span>
                         </div>
                     </div>
+                    <div class="game-card" id="play-rockpaperscissors-game" data-category="action">
+                        <div class="game-card-image-wrapper"></div>
+                        <div class="game-card-content">
+                            <h3>Rock Paper Scissors</h3>
+                            <p>เกมเป่ายิ่งฉุบ วัดความเร็วและโชคชะตา</p>
+                            <span class="play-btn"><i class="bi bi-play-circle-fill me-1"></i>เล่นเลย</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="emoji-sender">
                     <select id="gc-emoji-select" class="form-select form-select-sm">
@@ -383,6 +392,37 @@ if ($is_zrok_access) {
             </div>
         </div>
     </div>
+
+    <div id="rockpaperscissors-popup-container">
+        <div class="rockpaperscissors-header">
+            <h5><i class="bi bi-hand-index-fill me-2"></i>Rock Paper Scissors</h5>
+            <button id="rockpaperscissors-close-btn" class="btn-close btn-close-white"></button>
+        </div>
+        <div class="rockpaperscissors-body">
+            <div class="rockpaperscissors-status">เลือกตัวเลือกของคุณแล้วกดเล่น!</div>
+            <div class="choices-container">
+                <button class="choice-btn" data-choice="rock">✊</button>
+                <button class="choice-btn" data-choice="paper">✋</button>
+                <button class="choice-btn" data-choice="scissors">✌️</button>
+            </div>
+            <div class="results-display"></div>
+            <div class="rockpaperscissors-options">
+                <input id="rps-bet-amount" type="number" min="0" value="0" placeholder="จำนวน Coins" />
+                <span id="rps-player-count" class="text-white/80 text-sm">ผู้เล่น: 1</span>
+            </div>
+            <div class="emoji-controls">
+                <select id="rps-emoji-select">
+                    <option>👍</option><option>😂</option><option>❤️</option><option>🎉</option><option>🔥</option><option>🤯</option>
+                </select>
+                <button id="rps-emoji-btn" class="px-3 py-2 rounded-lg bg-pink-500 hover:bg-pink-600 text-white shadow">ส่งอีโมจิ</button>
+            </div>
+            <div id="rps-emoji-stream" class="emoji-stream"></div>
+            <div class="host-controls">
+                <button id="rps-play-btn">เล่น</button>
+                <button id="rps-reset-btn">เริ่มใหม่</button>
+            </div>
+        </div>
+    </div>
     
     <div id="version-indicator" title="คลิกเพื่อดูประวัติการอัปเดต">v1.0.3</div>
 
@@ -405,6 +445,7 @@ if ($is_zrok_access) {
     <script src="js/videocall/room_game/game_center.js" defer></script>
     <script src="js/videocall/room_game/game_xoxo.js" defer></script>
     <script src="js/videocall/room_game/game_headsortails.js" defer></script>
+    <script src="js/videocall/room_game/game_rockpaperscissors.js" defer></script>
     <script src="js/videocall/room_main_fix.js"></script>
 
     <script>

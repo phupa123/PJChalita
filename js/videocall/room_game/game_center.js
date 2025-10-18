@@ -24,6 +24,7 @@
         // Game Card Listeners
         gameCenterPopup.querySelector('#play-xoxo-game').addEventListener('click', () => openGame('xoxo'));
         gameCenterPopup.querySelector('#play-headsortails-game').addEventListener('click', () => openGame('headsortails'));
+        gameCenterPopup.querySelector('#play-rockpaperscissors-game').addEventListener('click', () => openGame('rockpaperscissors'));
 
         // Category Filter Listeners
         gameCenterPopup.querySelectorAll('.category-btn').forEach(btn => {
@@ -104,6 +105,8 @@
             if (peerManager) {
                 peerManager.broadcast({ type: 'headsortails_game_open', host: window.appConfig.MY_USER_INFO });
             }
+        } else if (gameId === 'rockpaperscissors') {
+            gamePopup = document.getElementById('rockpaperscissors-popup-container');
         }
         
         if (gamePopup) {
