@@ -121,6 +121,7 @@ $avatar = get_avatar_url($avatarRaw);
 
                 <div class="action-buttons d-grid gap-3 mt-4">
                     <a href="VideoCall.php" class="btn btn-primary btn-lg"><i class="bi bi-camera-video me-2"></i>เข้าสู่ห้องสนทนา</a>
+                    <a href="upload.php" class="btn btn-info btn-lg"><i class="bi bi-cloud-arrow-up me-2"></i>อัปโหลดไฟล์</a> <a href="profile.php" class="btn btn-outline-light"><i class="bi bi-person-gear me-2"></i>จัดการโปรไฟล์</a>
                     <a href="profile.php" class="btn btn-outline-light"><i class="bi bi-person-gear me-2"></i>จัดการโปรไฟล์</a>
                     <a href="quick-login-auth.php" class="btn btn-outline-info"><i class="bi bi-grid-3x2-gap-fill me-2"></i>Quick Login</a>
                     <a href="index_folder/Scores/MyScore.php" class="btn btn-success btn-lg"><i class="bi bi-trophy me-2"></i>คะแนนของฉัน</a>

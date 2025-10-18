@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.18"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0"
+  }
+}

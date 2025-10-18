@@ -35,6 +35,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                                 <i class="bi bi-volume-up me-2"></i>ระดับเสียง
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#game-sounds" onclick="showSection('game-sounds')">
+                                <i class="bi bi-music-note-beamed me-2"></i>เสียงเกม
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -120,6 +125,69 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                                     </div>
                                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testButtonSound()">
                                         <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงปุ่ม
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Sounds Settings -->
+                <div id="game-sounds-section" class="settings-section" style="display: none;">
+                    <h3><i class="bi bi-music-note-beamed me-2"></i>ตั้งค่าเสียงเกม</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">เสียงทั่วไปเกม</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">ระดับเสียง: <span id="general-game-volume-value">80</span>%</label>
+                                        <input type="range" class="form-range" id="general-game-volume" min="0" max="100" value="80">
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testGeneralGameSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงทั่วไป
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">เสียง Heads or Tails</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">ระดับเสียง: <span id="headsortails-volume-value">80</span>%</label>
+                                        <input type="range" class="form-range" id="headsortails-volume" min="0" max="100" value="80">
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testHeadsOrTailsSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงเหรียญ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">เสียง XOXO</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">ระดับเสียง: <span id="xoxo-volume-value">80</span>%</label>
+                                        <input type="range" class="form-range" id="xoxo-volume" min="0" max="100" value="80">
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testXOXOSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียง XOXO
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">เสียงแจ้งเตือนตา</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">ระดับเสียง: <span id="turn-notification-volume-value">80</span>%</label>
+                                        <input type="range" class="form-range" id="turn-notification-volume" min="0" max="100" value="80">
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="testTurnNotificationSound()">
+                                        <i class="bi bi-play-circle me-1"></i>ทดสอบเสียงตา
                                     </button>
                                 </div>
                             </div>

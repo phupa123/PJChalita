@@ -1,0 +1,158 @@
+/* PJChalita/js/videocall/room_game/game_xoxo.css */
+
+#xoxo-popup-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 90vw;
+    max-width: 400px;
+    z-index: 2600; /* Must be above other popups like YouTube */
+    display: none;
+    flex-direction: column;
+    
+    background: rgba(20, 22, 38, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#xoxo-popup-container.visible {
+    display: flex;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.xoxo-header {
+    padding: 12px 20px;
+    cursor: move;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.xoxo-header h5 {
+    margin: 0;
+    font-weight: 600;
+    color: #fff;
+}
+
+.xoxo-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.xoxo-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 300px;
+    height: 300px;
+    gap: 10px;
+}
+
+.xoxo-cell {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.xoxo-cell:hover:not(.x):not(.o) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.xoxo-cell.x {
+    color: #38bdf8; /* Light Blue for X */
+    cursor: not-allowed;
+}
+
+.xoxo-cell.o {
+    color: #f472b6; /* Pink for O */
+    cursor: not-allowed;
+}
+
+.xoxo-cell.win {
+    background-color: #facc15; /* Yellow for winning cells */
+    color: #111;
+}
+
+
+.xoxo-status {
+    font-size: 1.2rem;
+    font-weight: 500;
+    min-height: 30px;
+    text-align: center;
+}
+
+#xoxo-bet-amount {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+#xoxo-player-count {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 10px;
+    text-align: center;
+}
+
+.xoxo-reset-btn {
+    background-color: var(--primary-accent);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.xoxo-reset-btn:hover {
+    background-color: #67cff9;
+}
+
+/* Emoji stream */
+.emoji-stream {
+    position: relative;
+    width: 100%;
+    min-height: 24px;
+}
+.emoji-bubble {
+    display: inline-block;
+    margin: 4px;
+    padding: 4px 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #fff;
+    animation: fadeUp 3s ease forwards;
+}
+@keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(10px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-10px); }
+}

@@ -97,23 +97,45 @@
             setupControls(callbacks) {
                 // Helper function to add button sound events
                 const addButtonSounds = (button, callback) => {
-                    if (!button) return;
-                    let clickCount = 0;
+                    if (!button || !callback) return;
+
                     button.addEventListener('click', (e) => {
-                        clickCount++;
-                        setTimeout(() => {
-                            if (clickCount === 1) {
-                                // Single click - play button_input.mp3 (respect Settings volume)
-                                volumeManager.playButtonInputSound();
-                                callback(e);
-                            } else if (clickCount === 2) {
-                                // Double click - play button_output.mp3 (respect Settings volume)
-                                volumeManager.playButtonOutputSound();
-                                callback(e);
-                            }
-                            clickCount = 0;
-                        }, 300); // Reset after 300ms
+                        // Play sound from the global volume manager
+                        if(window.volumeManager && typeof window.volumeManager.playButtonInputSound === 'function') {
+                            window.volumeManager.playButtonInputSound();
+                        }
+                        callback(e);
                     });
+                };
+
+                // Add long-press/right-click listeners for Owner controls
+                const addOwnerControls = (button, type) => {
+                    if (!button) return;
+                    let pressTimer = null;
+                    const startPress = (e) => {
+                        if (e.type === 'contextmenu') {
+                            e.preventDefault();
+                            if (window.appConfig.MY_USER_INFO.rank === 'Owner') {
+                                ui.showMicCamPopup(type);
+                            }
+                            return;
+                        }
+                        if (e.button !== 0) return;
+                        e.preventDefault();
+                        pressTimer = setTimeout(() => {
+                            if (window.appConfig.MY_USER_INFO.rank === 'Owner') {
+                                ui.showMicCamPopup(type);
+                            }
+                        }, 500);
+                    };
+                    const endPress = () => { clearTimeout(pressTimer); };
+
+                    button.addEventListener('contextmenu', startPress);
+                    button.addEventListener('mousedown', startPress);
+                    button.addEventListener('mouseup', endPress);
+                    button.addEventListener('mouseleave', endPress);
+                    button.addEventListener('touchstart', startPress, { passive: false });
+                    button.addEventListener('touchend', endPress);
                 };
 
                 addButtonSounds(els.micBtn, callbacks.toggleAudio);
@@ -121,10 +143,40 @@
                 addButtonSounds(els.screenBtn, callbacks.shareScreen);
                 addButtonSounds(els.miniModeBtn, callbacks.toggleMiniMode);
                 addButtonSounds(els.hangUpBtn, callbacks.leave);
-                
-                if (els.youtubeBtn) {
-                    els.youtubeBtn.addEventListener('click', callbacks.openYoutubeModal);
+
+                addOwnerControls(els.micBtn, 'mic');
+                addOwnerControls(els.camBtn, 'cam');
+
+                // Switch camera button
+                if (els.switchCamBtn) {
+                    let pressTimer = null;
+                    const startPress = (e) => {
+                        if (e.type === 'contextmenu') {
+                            e.preventDefault();
+                            if (window.appConfig.MY_USER_INFO.rank === 'Owner') {
+                                ui.showSwitchCamPopup();
+                            }
+                            return;
+                        }
+                        if (e.button !== 0) return;
+                        e.preventDefault();
+                        pressTimer = setTimeout(() => {
+                            if (window.appConfig.MY_USER_INFO.rank === 'Owner') {
+                                ui.showSwitchCamPopup();
+                            }
+                        }, 500);
+                    };
+                    const endPress = () => { clearTimeout(pressTimer); };
+
+                    els.switchCamBtn.addEventListener('contextmenu', startPress);
+                    els.switchCamBtn.addEventListener('mousedown', startPress);
+                    els.switchCamBtn.addEventListener('mouseup', endPress);
+                    els.switchCamBtn.addEventListener('mouseleave', endPress);
+                    els.switchCamBtn.addEventListener('touchstart', startPress, { passive: false });
+                    els.switchCamBtn.addEventListener('touchend', endPress);
                 }
+
+                // YouTube button is handled by its own module, so we don't add a listener here.
             },
             addVideo(uuid, stream, name, isLocal) {
                 if (!els.grid) return;
@@ -147,20 +199,18 @@
                 if(stream) videoElement.srcObject = stream;
                 videoElement.muted = isLocal;
                 
-                // --- [เพิ่ม] ตั้งค่าเสียงเริ่มต้น ---
                 videoElement.volume = (window.streamManager.volumeLevels[uuid] || 100) / 100;
 
-                // --- [เพิ่ม] Event Listener สำหรับ Popup ปรับเสียง ---
                 let pressTimer = null;
                 const startPress = (e) => {
-                    if (e.type === 'contextmenu') { // คลิกขวา
+                    if (e.type === 'contextmenu') {
                         e.preventDefault();
                         ui.showVolumePopup(uuid);
                         return;
                     }
-                    if (e.button !== 0) return; // สนใจแค่คลิกซ้าย
+                    if (e.button !== 0) return;
                     e.preventDefault();
-                    pressTimer = setTimeout(() => { // กดค้าง
+                    pressTimer = setTimeout(() => {
                         ui.showVolumePopup(uuid);
                     }, 500);
                 };
@@ -173,9 +223,7 @@
                 box.addEventListener('touchstart', startPress, { passive: false });
                 box.addEventListener('touchend', endPress);
 
-                // --- [เพิ่ม] Event Listener สำหรับ Full Screen ---
                 box.addEventListener('dblclick', (e) => {
-                    // Prevent if it's part of the volume popup interaction
                     if (e.target.closest('.video-overlay') || e.target.closest('.camera-off-overlay')) return;
                     ui.toggleFullScreen(uuid);
                 });
@@ -191,12 +239,10 @@
                 const overlay = box.querySelector('.camera-off-overlay');
                 const ownerIcon = box.querySelector('.owner-camera-off-icon');
 
-                // --- จุดแก้ไข: ปรับปรุง Logic การแสดงผลไอคอน ---
                 const camBtn = document.getElementById('cam-btn');
                 const isCamBtnActive = camBtn ? camBtn.classList.contains('active') : true;
                 const isMicOff = status.isAudioEnabled === false;
 
-                // Determine user rank
                 const isMyOwnCard = uuid === window.appConfig.MY_USER_INFO.uuid;
                 const viewerRank = window.appConfig.MY_USER_INFO.rank;
                 const isOwner = viewerRank === 'Owner';
@@ -210,14 +256,11 @@
                     camIcon.style.display = isCamOff ? 'inline-block' : 'none';
                 }
 
-                // Handle overlay and owner icon
                 if (overlay && ownerIcon) {
                     if (isOwner && !isMyOwnCard) {
-                        // For remote users viewed by Owner: hide overlay, show top-right icon when camera is off
                         overlay.classList.remove('visible');
                         ownerIcon.style.display = isCamOff ? 'block' : 'none';
                     } else {
-                        // For local user or remote users viewed by regular users: show overlay when camera is off
                         overlay.classList.toggle('visible', isCamOff);
                         ownerIcon.style.display = 'none';
                     }
@@ -236,17 +279,16 @@
                 const icon = els.camBtn.querySelector('i');
                 if (icon) icon.className = isEnabled ? 'bi bi-camera-video-fill' : 'bi bi-camera-video-off-fill';
             },
-            // --- [เพิ่ม] ฟังก์ชันแสดง Popup ปรับเสียง ---
             showVolumePopup: uuid => {
                 const myUuid = window.appConfig.MY_USER_INFO.uuid;
-                const user = (uuid === myUuid) 
-                    ? { nickname: 'คุณ' } 
+                const user = (uuid === myUuid)
+                    ? { nickname: 'คุณ' }
                     : window.streamManager.peerInfo[uuid];
 
                 if (!user) return;
 
                 const currentVolume = window.streamManager.volumeLevels[uuid] || 100;
-                
+
                 Swal.fire({
                     title: `ปรับเสียง - ${user.nickname}`,
                     html: `
@@ -265,16 +307,200 @@
                         const valueSpan = document.getElementById('volume-value');
                         slider.addEventListener('input', (e) => {
                             valueSpan.textContent = `${e.target.value}%`;
-                            ui.setVolume(uuid, e.target.value, false); // อัปเดตเสียงทันที
+                            ui.setVolume(uuid, e.target.value, false);
                         });
                     },
                     preConfirm: () => {
                         const value = document.getElementById('volume-slider').value;
-                        ui.setVolume(uuid, value, true); // บันทึกค่าสุดท้าย
+                        ui.setVolume(uuid, value, true);
                     }
                 });
             },
-            // --- [เพิ่ม] ฟังก์ชันตั้งค่าเสียง ---
+            showRefreshPopup: () => {
+                const myUuid = window.appConfig.MY_USER_INFO.uuid;
+                const users = Object.entries(window.streamManager.peerInfo)
+                    .filter(([uuid]) => uuid !== myUuid)
+                    .map(([uuid, info]) => ({ uuid, nickname: info.nickname }));
+
+                if (users.length === 0) {
+                    Swal.fire('ไม่มีผู้ใช้', 'ไม่มีผู้ใช้อื่นในห้อง', 'info');
+                    return;
+                }
+
+                const userOptions = users.map(user =>
+                    `<option value="${user.uuid}">${user.nickname}</option>`
+                ).join('');
+
+                Swal.fire({
+                    title: 'รีเฟรชจอผู้ใช้',
+                    html: `
+                        <select id="refresh-user-select" class="form-select">
+                            <option value="">เลือกผู้ใช้...</option>
+                            ${userOptions}
+                        </select>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonText: 'รีเฟรช',
+                    preConfirm: () => {
+                        const selectedUuid = document.getElementById('refresh-user-select').value;
+                        if (!selectedUuid) {
+                            Swal.showValidationMessage('กรุณาเลือกผู้ใช้');
+                            return false;
+                        }
+                        return selectedUuid;
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        peers.sendToPeer(result.value, { type: 'refresh-screen' });
+                        ui.showToast('ส่งคำสั่งรีเฟรชจอแล้ว', 'info');
+                    }
+                });
+            },
+            showMicCamPopup: (type) => {
+                const myUuid = window.appConfig.MY_USER_INFO.uuid;
+                const users = Object.entries(window.streamManager.peerInfo)
+                    .filter(([uuid]) => uuid !== myUuid)
+                    .map(([uuid, info]) => ({ uuid, nickname: info.nickname }));
+
+                if (users.length === 0) {
+                    Swal.fire('ไม่มีผู้ใช้', 'ไม่มีผู้ใช้อื่นในห้อง', 'info');
+                    return;
+                }
+
+                const title = type === 'mic' ? 'ควบคุมไมค์' : 'ควบคุมกล้อง';
+                const icon = type === 'mic' ? 'bi-mic-fill' : 'bi-camera-video-fill';
+
+                const userOptions = users.map(user => {
+                    if (type === 'cam') {
+                        return `
+                            <div class="mb-3">
+                                <div class="fw-bold mb-2">${user.nickname}</div>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span style="font-size: 0.9em;">ระบบกล้อง</span>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="system-${user.uuid}" checked>
+                                        <label class="form-check-label" for="system-${user.uuid}"></label>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span style="font-size: 0.9em;">แสดงภาพ</span>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="visual-${user.uuid}" checked>
+                                        <label class="form-check-label" for="visual-${user.uuid}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span>${user.nickname}</span>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="${type}-${user.uuid}" checked>
+                                    <label class="form-check-label" for="${type}-${user.uuid}"></label>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }).join('');
+
+                Swal.fire({
+                    title: title,
+                    html: `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${userOptions}
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonText: 'บันทึก',
+                    preConfirm: () => {
+                        const results = {};
+                        users.forEach(user => {
+                            if (type === 'cam') {
+                                const systemCheckbox = document.getElementById(`system-${user.uuid}`);
+                                const visualCheckbox = document.getElementById(`visual-${user.uuid}`);
+                                results[user.uuid] = {
+                                    systemEnabled: systemCheckbox.checked,
+                                    visualEnabled: visualCheckbox.checked
+                                };
+                            } else {
+                                const checkbox = document.getElementById(`${type}-${user.uuid}`);
+                                results[user.uuid] = checkbox.checked;
+                            }
+                        });
+                        return results;
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Object.entries(result.value).forEach(([uuid, config]) => {
+                            if (type === 'cam') {
+                                peers.sendToPeer(uuid, {
+                                    type: 'toggle-cam',
+                                    systemEnabled: config.systemEnabled,
+                                    visualEnabled: config.visualEnabled
+                                });
+                            } else {
+                                peers.sendToPeer(uuid, { type: `toggle-${type}`, enabled: config });
+                            }
+                        });
+                        ui.showToast(`ส่งคำสั่งควบคุม${type === 'mic' ? 'ไมค์' : 'กล้อง'}แล้ว`, 'info');
+                    }
+                });
+            },
+            showSwitchCamPopup: () => {
+                const myUuid = window.appConfig.MY_USER_INFO.uuid;
+                const users = Object.entries(window.streamManager.peerInfo)
+                    .filter(([uuid]) => uuid !== myUuid)
+                    .map(([uuid, info]) => ({ uuid, nickname: info.nickname }));
+
+                if (users.length === 0) {
+                    Swal.fire('ไม่มีผู้ใช้', 'ไม่มีผู้ใช้อื่นในห้อง', 'info');
+                    return;
+                }
+
+                const userOptions = users.map(user =>
+                    `<option value="${user.uuid}">${user.nickname}</option>`
+                ).join('');
+
+                const cameraOptions = [
+                    { value: 'user', label: 'กล้องหน้า' },
+                    { value: 'environment', label: 'กล้องหลัง' },
+                    { value: 'left', label: 'กล้องซ้าย' },
+                    { value: 'right', label: 'กล้องขวา' }
+                ].map(cam => `<option value="${cam.value}">${cam.label}</option>`).join('');
+
+                Swal.fire({
+                    title: 'สลับกล้อง',
+                    html: `
+                        <select id="switch-cam-user-select" class="form-select mb-3">
+                            <option value="">เลือกผู้ใช้...</option>
+                            ${userOptions}
+                        </select>
+                        <select id="camera-facing-select" class="form-select">
+                            ${cameraOptions}
+                        </select>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonText: 'สลับ',
+                    preConfirm: () => {
+                        const selectedUuid = document.getElementById('switch-cam-user-select').value;
+                        const facingMode = document.getElementById('camera-facing-select').value;
+                        if (!selectedUuid) {
+                            Swal.showValidationMessage('กรุณาเลือกผู้ใช้');
+                            return false;
+                        }
+                        return { uuid: selectedUuid, facingMode };
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        peers.sendToPeer(result.value.uuid, { type: 'switch-camera', facingMode: result.value.facingMode });
+                        ui.showToast('ส่งคำสั่งสลับกล้องแล้ว', 'info');
+                    }
+                });
+            },
             setVolume: (uuid, value, save = true) => {
                 const intValue = parseInt(value, 10);
                 if (save) {
@@ -288,7 +514,6 @@
                     }
                 }
             },
-            // --- [เพิ่ม] ฟังก์ชัน Full Screen ---
             toggleFullScreen: (uuid) => {
                 const box = document.getElementById(uuid);
                 if (!box) return;
@@ -314,7 +539,6 @@
             } else if (data?.type === 'request-status') {
                 peers.sendToPeer(id, { type: 'status-update', status: window.streamManager.getCurrentStatus() });
             }
-            // --- [เพิ่ม] จัดการ Event การแชร์หน้าจอ ---
             else if (data?.type === 'screen-sharing-start') {
                 const userContainer = document.getElementById(data.uuid);
                 if (userContainer) userContainer.classList.add('screen-sharing');
@@ -322,7 +546,6 @@
                 const userContainer = document.getElementById(data.uuid);
                 if (userContainer) userContainer.classList.remove('screen-sharing');
             }
-            // --- [เพิ่ม] จัดการเสียงเข้าร่วมและออกจากห้อง ---
             else if (data?.type === 'play-sound' && id !== window.appConfig.MY_USER_INFO.uuid) {
                 if (data.soundPath === 'sound/videocall/join_room.mp3') {
                     volumeManager.playJoinSound();
@@ -331,6 +554,18 @@
                 } else {
                     volumeManager.playSound(data.soundPath);
                 }
+            }
+            else if (data?.type === 'refresh-screen') {
+                window.streamManager.handleRefreshScreen();
+            }
+            else if (data?.type === 'toggle-mic') {
+                window.streamManager.handleToggleMic(data.enabled);
+            }
+            else if (data?.type === 'toggle-cam') {
+                window.streamManager.handleToggleCam(data.systemEnabled, data.visualEnabled);
+            }
+            else if (data?.type === 'switch-camera') {
+                window.streamManager.handleSwitchCamera(data.facingMode);
             }
             dataHandlers.forEach(handler => { try { handler(id, data); } catch (e) { console.warn("Data handler error", e); } });
         };
@@ -354,18 +589,14 @@
                 } else {
                     peerOptions = { host: 'peerjs.929292.xyz', port: 443, path: '/', secure: true };
                 }
-                // Add ICE servers for better NAT traversal and stability
                 peerOptions.config = {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' }
+                        { urls: 'stun:stun1.l.google.com:19302' }
                     ]
                 };
-                peerOptions.trickle = true; // Enable trickle ICE for faster connections
-                peerOptions.debug = 0; // Reduce debug output for performance
+                peerOptions.trickle = true;
+                peerOptions.debug = 0;
                 peer = new window.Peer(myInfo.uuid, peerOptions);
                 peer.on('open', () => onReady(peer));
                 peer.on('error', e => {
@@ -431,7 +662,7 @@
     // --- Stream Manager (ตรรกะหลัก) ---
     const manager = {
         myStream: null, peer: null, peerInfo: {}, isLeaving: false,
-        volumeLevels: {}, // --- [เพิ่ม] ตัวแปรเก็บระดับเสียง ---
+        volumeLevels: {}, 
 
         async start() {
             ui.setupControls({
@@ -440,14 +671,11 @@
                 shareScreen: () => this.shareScreen(),
                 toggleMiniMode: () => this.toggleMiniMode(),
                 leave: () => this.leave(),
-                openYoutubeModal: () => this.openYoutubeModal() // Add YouTube modal callback
             });
 
-            // Add refresh camera button
             this.addRefreshCameraButton();
 
             try {
-                // Load user settings for camera and mic auto behavior
                 const cameraAuto = localStorage.getItem('pjchalita-camera-auto') || 'auto';
                 const micAuto = localStorage.getItem('pjchalita-mic-auto') || 'auto';
 
@@ -455,53 +683,32 @@
                     video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
                     audio: true
                 };
-
                 this.myStream = await navigator.mediaDevices.getUserMedia(constraints);
 
-                // Apply initial settings based on user preferences
                 const videoTrack = this.myStream.getVideoTracks()[0];
                 const audioTrack = this.myStream.getAudioTracks()[0];
 
-                // Apply camera setting
                 if (videoTrack) {
-                    let shouldEnableCamera = true;
-                    if (cameraAuto === 'off') {
-                        shouldEnableCamera = false;
-                    } else if (cameraAuto === 'always-off') {
-                        shouldEnableCamera = true; // Camera is on but overlay black box will be shown
-                    }
+                    let shouldEnableCamera = cameraAuto !== 'off';
                     videoTrack.enabled = shouldEnableCamera;
                     ui.updateCam(shouldEnableCamera);
-
-                    // If 'always-off' selected, show black overlay box for local user except Owner
-                    if (cameraAuto === 'always-off') {
-                        const isOwner = window.appConfig.MY_USER_INFO.rank === 'Owner';
-                        if (!isOwner) {
-                            const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
-                            if (localBox) {
-                                const overlay = localBox.querySelector('.camera-off-overlay');
-                                if (overlay) overlay.classList.add('visible');
-                            }
-                        }
-                    }
                 }
 
-                // Apply mic setting
                 if (audioTrack) {
-                    const shouldEnableMic = micAuto === 'off' ? false : true;
+                    const shouldEnableMic = micAuto !== 'off';
                     audioTrack.enabled = shouldEnableMic;
                     ui.updateMic(shouldEnableMic);
                 }
 
                 ui.addVideo(window.appConfig.MY_USER_INFO.uuid, this.myStream, window.appConfig.MY_USER_INFO.nickname, true);
                 ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
+
             } catch (e) {
                 console.error("ไม่สามารถเข้าถึงกล้องหรือไมโครโฟนได้:", e);
                 ui.updateConnectionStatus('error', 'ไม่สามารถเข้าถึงกล้อง/ไมค์ได้');
                 return;
             }
 
-            // Show "กำลังเชื่อมต่อ" on initial load
             ui.updateConnectionStatus('connecting', 'กำลังเชื่อมต่อ');
 
             this.performInitialConnect();
@@ -514,8 +721,6 @@
         addRefreshCameraButton() {
             const controlsBar = document.getElementById('controls-bar');
             if (!controlsBar) return;
-
-            // Check if button already exists
             if (document.getElementById('refresh-cam-btn')) return;
 
             const btn = document.createElement('button');
@@ -525,51 +730,33 @@
             btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
             btn.style.marginLeft = '5px';
 
-            btn.addEventListener('click', async () => {
-                try {
-                    // Stop all current video tracks
-                    if (this.myStream) {
-                        this.myStream.getVideoTracks().forEach(track => track.stop());
-                    }
-                    // Get new video stream with same constraints
-                    const constraints = {
-                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
-                        audio: false
-                    };
-                    const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-                    const newVideoTrack = newStream.getVideoTracks()[0];
-                    if (!newVideoTrack) throw new Error('No video track found');
+            let pressTimer = null;
+            let longPressed = false;
 
-                    // Replace video track in current stream
-                    if (this.myStream) {
-                        this.myStream.removeTrack(this.myStream.getVideoTracks()[0]);
-                        this.myStream.addTrack(newVideoTrack);
-                    }
-
-                    // Replace track in peer connections
-                    peers.replaceTrack(newVideoTrack);
-
-                    // Update UI video element
-                    const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
-                    if (localBox) {
-                        const video = localBox.querySelector('video');
-                        if (video) {
-                            video.srcObject = null;
-                            video.srcObject = this.myStream;
-                            video.play().catch(() => {});
-                        }
-                    }
-
-                    // Update status UI
-                    ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
-
-                    // Show toast notification
-                    ui.showToast('รีเฟรชกล้องเรียบร้อยแล้ว', 'success');
-                } catch (error) {
-                    console.error('Error refreshing camera:', error);
-                    ui.showToast('ไม่สามารถรีเฟรชกล้องได้', 'error');
+            const startPress = (e) => {
+                longPressed = false;
+                if (e.type === 'contextmenu' || (window.appConfig.MY_USER_INFO.rank === 'Owner' && e.button === 0)) {
+                    e.preventDefault();
+                    pressTimer = setTimeout(() => {
+                        longPressed = true;
+                        ui.showRefreshPopup();
+                    }, 500);
                 }
-            });
+            };
+
+            const endPress = (e) => {
+                clearTimeout(pressTimer);
+                if (!longPressed && e.type !== 'contextmenu') {
+                    this.refreshCameraStream();
+                }
+            };
+            
+            btn.addEventListener('contextmenu', startPress);
+            btn.addEventListener('mousedown', startPress);
+            btn.addEventListener('mouseup', endPress);
+            btn.addEventListener('mouseleave', endPress);
+            btn.addEventListener('touchstart', startPress, { passive: false });
+            btn.addEventListener('touchend', endPress);
 
             controlsBar.insertBefore(btn, controlsBar.querySelector('#mini-mode-btn'));
         },
@@ -592,7 +779,6 @@
                 if (uuid !== window.appConfig.MY_USER_INFO.uuid) ui.removeVideo(uuid);
             }
             this.peerInfo = {};
-            // Show reconnecting countdown
             let countdown = 3;
             ui.updateConnectionStatus('reconnecting', `กำลังเชื่อมต่อใหม่ ${countdown}...`);
             const countdownInterval = setInterval(() => {
@@ -611,11 +797,9 @@
         },
 
         async joinRoomWithServer() {
-            // Remove the 'connecting' message here to avoid duplicate message
             const res = await API.join(window.appConfig.ROOM_ID);
             if (res.status === 'success' && Array.isArray(res.peers)) {
                 ui.updateConnectionStatus('connected', 'เชื่อมต่อสำเร็จ!');
-                // Play join room sound locally and broadcast to others
                 volumeManager.playJoinSound();
                 peers.broadcast({ type: 'play-sound', soundPath: 'sound/videocall/join_room.mp3' });
                 res.peers.forEach(p => {
@@ -633,7 +817,6 @@
         leave() {
             if (this.isLeaving) return;
             this.isLeaving = true;
-            // Play leave room sound locally and broadcast to others
             volumeManager.playLeaveSound();
             peers.broadcast({ type: 'play-sound', soundPath: 'sound/videocall/leave_room.mp3' });
             API.leave(window.appConfig.ROOM_ID);
@@ -679,7 +862,6 @@
                 isVideoEnabled: videoTrack ? videoTrack.enabled : false,
             };
         },
-        // --- [เพิ่ม] โหมดหน้าต่างลอย (Picture-in-Picture) ---
         async toggleMiniMode() {
             try {
                 const myVideoEl = document.querySelector(`#${window.appConfig.MY_USER_INFO.uuid} video`);
@@ -714,12 +896,10 @@
             if (info && !this.peerInfo[id]) {
                 this.peerInfo[id] = { ...this.peerInfo[id], nickname: info.nickname, rank: info.rank, stream: stream };
                 ui.showToast(`${info.nickname} ได้เข้าร่วมห้อง`, 'join');
-                // Request status immediately when remote stream becomes available
                 peers.sendToPeer(id, { type: 'request-status' });
             }
         },
         onRemoteStatusUpdate(uuid, status) {
-            // ?????? Status-icon ?????? Owner ??????????????????????
             const existingStatus = this.peerInfo[uuid]?.status || {};
             let statusToDisplay = {
                 isAudioEnabled: status.isAudioEnabled !== undefined ? status.isAudioEnabled : existingStatus.isAudioEnabled,
@@ -727,14 +907,11 @@
             };
 
             if (this.peerInfo[uuid]) {
-                // Update the stored status
                 this.peerInfo[uuid].status = statusToDisplay;
             }
 
-            // Update the UI for the specific user
             ui.updateStatus(uuid, statusToDisplay);
-
-            // --- จุดแก้ไข: อัปเดตสถานะของ Mini Video ด้วย ---
+            
             if (window.RoomMiniVideoFeatureModule && typeof window.RoomMiniVideoFeatureModule.updateStatusIfActive === 'function') {
                 window.RoomMiniVideoFeatureModule.updateStatusIfActive(uuid, statusToDisplay);
             }
@@ -750,21 +927,132 @@
                 ui.removeVideo(id);
             }
         },
-        openYoutubeModal() {
-            if (streamManager.openYoutubeModal) {
-                 streamManager.openYoutubeModal();
+        handleRefreshScreen() {
+            // Show notification to user that camera is being refreshed
+            ui.showToast('กำลังรีเฟรชกล้อง...', 'info');
+            // Restart the local camera stream directly
+            this.refreshCameraStream();
+        },
+        async refreshCameraStream() {
+            ui.showToast('กำลังรีเฟรชกล้อง...', 'info');
+            try {
+                // Stop existing video tracks
+                if (this.myStream) {
+                    this.myStream.getVideoTracks().forEach(track => track.stop());
+                }
+
+                // Request new camera stream
+                const constraints = {
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+                    audio: false
+                };
+                const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const newVideoTrack = newStream.getVideoTracks()[0];
+                if (!newVideoTrack) throw new Error('No video track found');
+
+                // Replace track in existing stream
+                if (this.myStream) {
+                    this.myStream.removeTrack(this.myStream.getVideoTracks()[0]);
+                    this.myStream.addTrack(newVideoTrack);
+                }
+
+                // Update peer connections
+                peers.replaceTrack(newVideoTrack);
+
+                // Update local video element
+                const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
+                if (localBox) {
+                    const video = localBox.querySelector('video');
+                    if (video) {
+                        video.srcObject = null;
+                        video.srcObject = this.myStream;
+                        video.play().catch(() => {});
+                    }
+                }
+
+                // Update status and show success
+                ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
+                ui.showToast('รีเฟรชกล้องเรียบร้อยแล้ว', 'success');
+            } catch (error) {
+                console.error('Error refreshing camera:', error);
+                ui.showToast('ไม่สามารถรีเฟรชกล้องได้', 'error');
             }
-             else {
-                console.warn("YouTube module not ready or missing openModal function.");
-                Swal.fire('YouTube Module Missing', 'ไม่สามารถเปิด YouTube ได้ในขณะนี้', 'warning');
+        },
+        handleToggleMic(enabled) {
+            const track = this.myStream?.getAudioTracks()[0];
+            if (track) {
+                track.enabled = enabled;
+                const status = this.getCurrentStatus();
+                ui.updateMic(status.isAudioEnabled);
+                ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, status);
+                peers.broadcast({ type: 'status-update', status: status });
             }
-        }
+        },
+        handleToggleCam(systemEnabled, visualEnabled) {
+            const track = this.myStream?.getVideoTracks()[0];
+            if (track) {
+                track.enabled = systemEnabled;
+                const status = this.getCurrentStatus();
+                ui.updateCam(visualEnabled);
+                ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, {
+                    ...status,
+                    isVideoEnabled: visualEnabled
+                });
+                peers.broadcast({
+                    type: 'status-update',
+                    status: {
+                        isAudioEnabled: status.isAudioEnabled,
+                        realVideoState: systemEnabled,
+                        visualVideoState: visualEnabled
+                    }
+                });
+            }
+        },
+        async handleSwitchCamera(facingMode) {
+            try {
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 },
+                        facingMode: facingMode
+                    },
+                    audio: false
+                };
+                const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const newVideoTrack = newStream.getVideoTracks()[0];
+                if (!newVideoTrack) throw new Error('No video track found');
+
+                if (this.myStream) {
+                    this.myStream.removeTrack(this.myStream.getVideoTracks()[0]);
+                    this.myStream.addTrack(newVideoTrack);
+                }
+
+                peers.replaceTrack(newVideoTrack);
+
+                const localBox = document.getElementById(window.appConfig.MY_USER_INFO.uuid);
+                if (localBox) {
+                    const video = localBox.querySelector('video');
+                    if (video) {
+                        video.srcObject = null;
+                        video.srcObject = this.myStream;
+                        video.play().catch(() => {});
+                    }
+                }
+
+                ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, this.getCurrentStatus());
+                ui.showToast('สลับกล้องเรียบร้อยแล้ว', 'success');
+            } catch (error) {
+                console.error('Error switching camera:', error);
+                ui.showToast('ไม่สามารถสลับกล้องได้', 'error');
+            }
+        },
     };
 
     // --- Initializer (ตัวเริ่มการทำงาน) ---
     function initialize() {
         window.streamManager = manager;
-        window.UIManager = ui; // --- [เพิ่ม] ทำให้ UIManager เป็น Global ---
+        window.UIManager = ui;
         const modules = [
             'RoomCameraSwitchModule',
             'RoomShareScreenModule',
@@ -776,7 +1064,10 @@
             'RecordingModule',
             'RoomLogsModule',
             'RoomMiniVideoFeatureModule',
-            'RoomYoutubeModule'
+            'RoomYoutubeModule',
+            'RoomXOXOGameModule',
+            'RoomGameCenterModule', // <-- เพิ่มโมดูล Game Center
+            'RoomHeadsOrTailsModule' // <-- เพิ่มโมดูล Heads or Tails
         ];
         modules.forEach(modName => {
             if (window[modName]?.install) {
@@ -787,8 +1078,33 @@
                 }
             }
         });
+        
+        // --- ✨ Controls Bar Auto-hide Logic ✨ ---
+        let controlsHideTimer = null;
+        const controlsBar = document.getElementById('controls-bar');
 
-        // --- จุดแก้ไข: เพิ่ม Event Listener สำหรับ Fullscreen และควบคุม Controls Bar ---
+        function hideControls() {
+            if (controlsBar && !controlsBar.matches(':hover')) {
+                controlsBar.classList.add('collapsed');
+            }
+        }
+
+        function showControls() {
+            if (controlsBar) {
+                controlsBar.classList.remove('collapsed');
+            }
+            if (controlsHideTimer) clearTimeout(controlsHideTimer);
+            controlsHideTimer = setTimeout(hideControls, 3000);
+        }
+        
+        // Start the auto-hide timer initially
+        showControls();
+
+        // Add event listeners to show controls on activity
+        ['mousemove', 'click', 'touchstart', 'keydown'].forEach(evt => {
+            document.body.addEventListener(evt, showControls, { passive: true });
+        });
+        
         let fullscreenControlsTimer = null;
         function showFullscreenControlsBar() {
             const controlsBarEl = document.getElementById('controls-bar');
@@ -800,7 +1116,6 @@
             }, 2500);
         }
         document.addEventListener('fullscreenchange', () => {
-            // Refresh all statuses on fullscreen enter or exit
             const myStatus = manager.getCurrentStatus();
             ui.updateStatus(window.appConfig.MY_USER_INFO.uuid, myStatus);
 
@@ -809,23 +1124,15 @@
                     ui.updateStatus(uuid, manager.peerInfo[uuid].status);
                 }
             }
-            // Show controls briefly when entering fullscreen
             if (document.fullscreenElement) {
                 showFullscreenControlsBar();
             }
         });
-        // Show/hide controls on user activity during fullscreen
         ['mousemove','touchstart','touchmove','keydown'].forEach(evt => {
             document.addEventListener(evt, () => {
                 if (document.fullscreenElement) showFullscreenControlsBar();
             }, { passive: true });
         });
-
-        const toggleControlsBtn = document.getElementById('toggle-controls-btn');
-        const controlsBar = document.getElementById('controls-bar');
-        if(toggleControlsBtn && controlsBar){
-            toggleControlsBtn.addEventListener('click', () => controlsBar.classList.toggle('collapsed'));
-        }
 
         const ownerLogsBtn = document.getElementById('owner-logs-btn');
         if(ownerLogsBtn && typeof manager.showLogs === 'function'){
@@ -843,10 +1150,11 @@
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => {
-                // Default to toggle fullscreen on your own video container
                 window.UIManager.toggleFullScreen(window.appConfig.MY_USER_INFO.uuid);
             });
         }
+
+
 
         manager.start();
     }

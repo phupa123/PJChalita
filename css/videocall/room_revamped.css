@@ -9,6 +9,8 @@
     --text-muted: #8a99b8;
     --green-glow: #33ff9c;
     --red-glow: #ff5858;
+    --game-button-color: #facc15; /* สีใหม่สำหรับปุ่มเกม */
+    --game-button-hover-color: #fce268; /* สีใหม่สำหรับปุ่มเกม hover */
 }
 
 body {
@@ -76,6 +78,7 @@ body {
     height: 100vh;
     padding: 1rem;
     box-sizing: border-box;
+    
 }
 
 .video-container {
@@ -252,6 +255,16 @@ body {
 .control-btn.active { background: var(--primary-accent); color: white; }
 .control-btn.hang-up { background: #ff3c5f; color: white; }
 
+#controls-bar #game-btn {
+    background-color: var(--game-button-color);
+    color: black;
+}
+
+#controls-bar #game-btn:hover {
+    background-color: var(--game-button-hover-color);
+}
+
+
 /* Dropdown menu for Owner */
 .dropdown-menu {
     position: absolute !important;
@@ -401,4 +414,101 @@ body {
     #controls-bar { bottom: 10px; }
     #toast-container { top: 75px; right: 10px; }
     #version-indicator { bottom: 5px; right: 5px; font-size: 10px; }
+}
+
+/* --- More Options Modal Styles --- */
+.more-options-modal {
+    background: rgba(24, 26, 32, 0.7); /* Glassmorphism background */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    color: var(--text-light);
+}
+
+.more-options-modal .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.more-options-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.menu-icon-btn {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-light);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* ทำให้เป็นสี่เหลี่ยมจัตุรัส */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.menu-icon-btn i {
+    font-size: 2.5rem; /* ขนาดไอคอนใหญ่ขึ้น */
+    margin-bottom: 0.5rem;
+}
+
+.menu-icon-btn span {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.menu-icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-accent);
+    transform: translateY(-4px);
+    color: #fff;
+}
+
+.menu-icon-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Small menu icon buttons for modal */
+.menu-icon-btn-small {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-light);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.menu-icon-btn-small i {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.menu-icon-btn-small span {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.menu-icon-btn-small:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-accent);
+    transform: translateY(-4px);
+    color: #fff;
+}
+
+.menu-icon-btn-small:active {
+    transform: translateY(-1px);
 }

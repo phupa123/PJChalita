@@ -1,0 +1,162 @@
+:root {
+    --upload-page-bg: #0d1117;
+    --card-bg: #161b22;
+    --border-color: #30363d;
+    --accent-color: #58a6ff;
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --success-color: #3fb950;
+    --danger-color: #f85149;
+}
+
+body.upload-page {
+    background-color: var(--upload-page-bg);
+    color: var(--text-primary);
+}
+
+.upload-container {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.drop-zone {
+    border: 3px dashed var(--border-color);
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--card-bg);
+}
+
+.drop-zone.active,
+.drop-zone:hover {
+    border-color: var(--accent-color);
+    background-color: #1c2128;
+}
+
+.drop-zone-prompt i {
+    font-size: 4rem;
+    color: var(--accent-color);
+}
+
+.drop-zone-prompt p {
+    font-size: 1.25rem;
+    margin: 1rem 0 0.5rem;
+}
+
+.drop-zone-prompt small {
+    color: var(--text-secondary);
+}
+
+.upload-queue {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.upload-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: opacity 0.5s ease;
+}
+
+.upload-item.completed {
+    border-left: 4px solid var(--success-color);
+    opacity: 0;
+    height: 0;
+    padding: 0 1rem;
+    margin: 0;
+    overflow: hidden;
+}
+.upload-item.error {
+    border-left: 4px solid var(--danger-color);
+}
+
+.upload-item .file-icon {
+    font-size: 2rem;
+    color: var(--text-secondary);
+}
+.upload-item .file-details {
+    flex-grow: 1;
+}
+.upload-item .file-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.upload-item .file-size {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+.upload-item .progress {
+    height: 8px;
+    margin-top: 0.5rem;
+    background-color: #0d1117;
+}
+.upload-item .status-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    color: var(--text-secondary);
+}
+.upload-item.completed .status-text { color: var(--success-color); }
+.upload-item.error .status-text { color: var(--danger-color); }
+
+.upload-item .btn-cancel-upload {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.file-list-container h3 {
+    color: var(--text-primary);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.file-item:hover {
+    background-color: #1c2128;
+}
+
+.file-item .file-details {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.file-item .file-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.navbar-custom .back-btn {
+    transition: all 0.2s ease;
+}
+.navbar-custom .back-btn:hover {
+    transform: translateX(-2px);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+}

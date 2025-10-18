@@ -13,10 +13,11 @@
 - [x] Add floating emojis to each game.
 - [x] Add looping entry animations for each game on popup open.
 - [x] Add settings button in Game Center for sound adjustments.
-- [ ] Update settings.php with game sound settings section.
+- [x] Update settings.php with game sound settings section.
 - [ ] Test all new features in browser.
-- [ ] Update CSS files to support new animations and floating emojis
-- [ ] Add styles for coin box reveal in Heads or Tails
-- [ ] Add styles for timer progress bar in XOXO
-- [ ] Add styles for floating emoji animations
-- [ ] Add styles for entry animations
+- [x] Update CSS files to support new animations and floating emojis
+- [x] Add styles for coin box reveal in Heads or Tails
+- [x] Add styles for timer progress bar in XOXO
+- [x] Add styles for floating emoji animations
+- [x] Add styles for entry animations
+- [x] Update room.php to use local TailwindCSS and latest GSAP
