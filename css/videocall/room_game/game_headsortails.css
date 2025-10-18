@@ -2,8 +2,8 @@
 
 #headsortails-popup-container {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 52%;
+    left: 48%;
     width: 95vw;
     max-width: 500px;
     max-height: 95vh;
@@ -25,7 +25,7 @@
     transform-style: preserve-3d;
 
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.9) rotateX(10deg);
+    transform: translate(-50%, -50%) scale(0.92) rotateX(8deg);
     transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                 transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -186,11 +186,15 @@
 @keyframes coinToss {
     0%   { transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1); }
     10%  { transform: translateY(-40px) rotateX(360deg) rotateY(0deg) scale(1.02); }
-    30%  { transform: translateY(-140px) rotateX(1080deg) rotateY(180deg) scale(1.05); }
-    55%  { transform: translateY(-220px) rotateX(1800deg) rotateY(360deg) scale(1.08); }
-    75%  { transform: translateY(-120px) rotateX(2160deg) rotateY(540deg) scale(1.04); }
-    90%  { transform: translateY(-20px) rotateX(2520deg) rotateY(720deg) scale(1.02); }
-    100% { transform: translateY(0) rotateX(2880deg) rotateY(900deg) scale(1); }
+    20%  { transform: translateY(-80px) rotateX(720deg) rotateY(180deg) scale(1.04); }
+    30%  { transform: translateY(-140px) rotateX(1080deg) rotateY(360deg) scale(1.05); }
+    40%  { transform: translateY(-180px) rotateX(1440deg) rotateY(540deg) scale(1.06); }
+    50%  { transform: translateY(-220px) rotateX(1800deg) rotateY(720deg) scale(1.08); }
+    60%  { transform: translateY(-180px) rotateX(2160deg) rotateY(900deg) scale(1.06); }
+    70%  { transform: translateY(-120px) rotateX(2520deg) rotateY(1080deg) scale(1.04); }
+    80%  { transform: translateY(-60px) rotateX(2880deg) rotateY(1260deg) scale(1.02); }
+    90%  { transform: translateY(-20px) rotateX(3240deg) rotateY(1440deg) scale(1.01); }
+    100% { transform: translateY(0) rotateX(3600deg) rotateY(1620deg) scale(1); }
 }
 
 .headsortails-status {
@@ -329,7 +333,7 @@
 .player-bets {
     width: 100%;
     margin-top: 24px;
-    max-height: 180px;
+    max-height: 250px;
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.25);
     border-radius: 12px;
